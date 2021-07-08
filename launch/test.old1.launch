@@ -16,17 +16,10 @@
   <remap from="cloud_in"             to="/rtabmap/cloud_map"/>
   <remap from="map"              to="/rtabmap/grid_map"/>
 
-``<!-- Model convers rosrun xacro xacro -inorder -o *.urdf *.urdf.xacro-->
-  <param name="robot_description" textfile="$(find stereo_nav)/urdf/model.urdf" />
-<!--
-  <node
-    name="joint_state_publisher"
-    pkg="joint_state_publisher"
-    type="joint_state_publisher">
-    <param name="use_gui" value="false"/>
-    <param name="rate" value="50" />
-  </node>
--->
+``<!-- Model -->
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find stereo_nav)/urdf/turtlebot3_waffle.urdf.xacro'" />
+  <param name="robot_description" command="$(arg urdf_file)" />
+
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="50.0" />
     <param name="tf_prefix" value=""/>
@@ -39,8 +32,6 @@
      <arg name="camera_info_topic" value="/camera/color/camera_info" />
      <arg name="approx_sync" value="false" />
 
-     <arg name="localization" value="false" />
-
      <!-- use actionlib to send goals to move_base -->
      <param name="use_action_for_goal" type="bool" value="true"/>
      <remap from="move_base"            to="/move_base"/>
@@ -48,6 +39,7 @@
      <!-- inputs -->
      <!--  <remap from="scan"            to="/scan"/> -->
      <remap from="odom"            to="/odom"/>
+     <remap from="rgbd_image"       to="rgbd_image"/>
 
      <!-- output -->
      <!-- <remap from="grid_map" to="/map"/> -->
@@ -61,6 +53,58 @@
      <!-- localization mode -->
      <param name="Mem/IncrementalMemory" type="string" value="true"/>
   </include>
+
+  <group ns="rtabmap">
+    <!--
+    <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
+
+      <remap from="rgb/image"         to="/camera/rgb/image_raw"/>
+      <remap from="depth/image"       to="/camera/depth/image_raw"/>
+      <remap from="rgb/camera_info"   to="/camera/rgb/camera_info"/>
+      -->
+<!--
+      <remap from="rgb/image"         to="/realsense/camera/color/image_raw"/>
+      <remap from="depth/image"       to="/realsense/camera/aligned_depth_to_color/image_raw"/>
+      <remap from="rgb/camera_info"   to="/realsense/camera/color/camera_info"/>
+-->
+<!--
+    </node>
+    -->
+
+    <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
+      <!-- <param name="database_path"       type="string" value="~/.ros/rtabmap.db"/> -->
+      <!-- <param name="frame_id"            type="string" value="base_footprint"/> -->
+
+      <param name="depth_topic"   type="string" value="/camera/aligned_depth_to_color/image_raw"/>
+      <param name="rgb_topic"   type="string" value="/camera/color/image_raw"/>
+      <param name="camera_info_topic"   type="string" value="/camera/color/camera_info"/>
+      <param name="approx_sync"   type="bool" value="false"/>
+
+      <!-- <param name="subscribe_scan"      type="bool"   value="false"/> -->
+<!--      <param name="approx_sync"         type="bool"   value="true"/> -->
+
+      <!-- use actionlib to send goals to move_base -->
+      <param name="use_action_for_goal" type="bool" value="true"/>
+      <remap from="move_base"            to="/move_base"/>
+
+      <!-- inputs -->
+      <!--  <remap from="scan"            to="/scan"/> -->
+      <remap from="odom"            to="/odom"/>
+      <remap from="rgbd_image"       to="rgbd_image"/>
+
+      <!-- output -->
+      <!-- <remap from="grid_map" to="/map"/> -->
+      <remap from="octomap_grid" to="/map"/>
+
+      <!-- RTAB-Map's parameters -->
+      <param name="Reg/Strategy"                 type="string" value="1"/>
+      <param name="Reg/Force3DoF"                type="string" value="true"/>
+      <param name="GridGlobal/MinSize"           type="string" value="20"/>
+
+      <!-- localization mode -->
+      <param name="Mem/IncrementalMemory" type="string" value="true"/>
+    </node>
+  </group>
 
   <!-- move_base -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
