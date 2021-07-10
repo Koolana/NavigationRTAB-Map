@@ -16,17 +16,17 @@
   <remap from="cloud_in"             to="/rtabmap/cloud_map"/>
   <remap from="map"              to="/rtabmap/grid_map"/>
 
-``<!-- Model convers rosrun xacro xacro -inorder -o *.urdf *.urdf.xacro-->
+  <!-- Model convers rosrun xacro xacro -inorder -o *.urdf *.urdf.xacro-->
+
+  <!-- <arg name="urdf_file" default="$(find xacro)/xacro -inorder '$(find stereo_nav)/urdf/turtlebot3_waffle.urdf.xacro'" />
+  <param name="robot_description" command="$(arg urdf_file)" /> -->
   <param name="robot_description" textfile="$(find stereo_nav)/urdf/model.urdf" />
-<!--
-  <node
-    name="joint_state_publisher"
-    pkg="joint_state_publisher"
-    type="joint_state_publisher">
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="false"/>
     <param name="rate" value="50" />
   </node>
--->
+
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="50.0" />
     <param name="tf_prefix" value=""/>
@@ -34,32 +34,17 @@
 
   <include file="$(find stereo_nav)/launch/rtabmap.launch">
      <arg name="rtabmap_args" value="--delete_db_on_start" />
-     <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />
-     <arg name="rgb_topic" value="/camera/color/image_raw" />
-     <arg name="camera_info_topic" value="/camera/color/camera_info" />
-     <arg name="approx_sync" value="false" />
+     <!-- <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />  -->
+     <!-- <arg name="rgb_topic" value="/camera/color/image_raw" /> -->
+     <!-- <arg name="camera_info_topic" value="/camera/color/camera_info" /> -->
+
+     <arg name="depth_topic" value="/camera/depth/image_raw" />
+     <arg name="rgb_topic" value="/camera/rgb/image_raw" />
+     <arg name="camera_info_topic" value="/camera/rgb/camera_info" />
+
+     <arg name="approx_sync" value="true" />
 
      <arg name="localization" value="false" />
-
-     <!-- use actionlib to send goals to move_base -->
-     <param name="use_action_for_goal" type="bool" value="true"/>
-     <remap from="move_base"            to="/move_base"/>
-
-     <!-- inputs -->
-     <!--  <remap from="scan"            to="/scan"/> -->
-     <remap from="odom"            to="/odom"/>
-
-     <!-- output -->
-     <!-- <remap from="grid_map" to="/map"/> -->
-     <remap from="octomap_grid" to="/map"/>
-
-     <!-- RTAB-Map's parameters -->
-     <param name="Reg/Strategy"                 type="string" value="1"/>
-     <param name="Reg/Force3DoF"                type="string" value="true"/>
-     <param name="GridGlobal/MinSize"           type="string" value="20"/>
-
-     <!-- localization mode -->
-     <param name="Mem/IncrementalMemory" type="string" value="true"/>
   </include>
 
   <!-- move_base -->
@@ -73,7 +58,7 @@
     <rosparam file="$(find stereo_nav)/param/dwa_local_planner_params_waffle.yaml" command="load" />
 
     <remap from="cmd_vel" to="/cmd_vel"/>
-    <remap from="odom" to="odom"/>
+    <remap from="odom" to="/odom"/>
     <param name="DWAPlannerROS/min_vel_x" value="0.0" if="false" />
   </node>
 

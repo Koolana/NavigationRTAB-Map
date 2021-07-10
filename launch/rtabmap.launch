@@ -35,7 +35,7 @@
   <arg name="gui_cfg"                 default="~/.ros/rtabmap_gui.ini" />
   <arg name="rviz_cfg"                default="$(find rtabmap_ros)/launch/config/rgbd.rviz" />
 
-  <arg name="frame_id"                default="camera_link"/>     <!-- Fixed frame id, you may set "base_link" or "base_footprint" if they are published -->
+  <arg name="frame_id"                default="base_footprint"/>     <!-- Fixed frame id, you may set "base_link" or "base_footprint" if they are published -->
   <arg name="odom_frame_id"           default=""/>                <!-- If set, TF is used to get odometry instead of the topic -->
   <arg name="map_frame_id"            default="map"/>
   <arg name="ground_truth_frame_id"   default=""/>     <!-- e.g., "world" -->
@@ -354,6 +354,29 @@
       <param     if="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="false"/>
       <param unless="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="true"/>
       <param name="Mem/InitWMWithAllNodes" type="string" value="$(arg localization)"/>
+
+
+      <!-- <param name="database_path"       type="string" value="~/.ros/rtabmap.db"/>
+      <param name="frame_id"            type="string" value="base_footprint"/> -->
+       <!-- use actionlib to send goals to move_base -->
+       <param name="use_action_for_goal" type="bool" value="true"/>
+       <remap from="move_base"            to="/move_base"/>
+
+       <!-- inputs -->
+       <!--  <remap from="scan"            to="/scan"/> -->
+       <remap from="odom"            to="/odom"/>
+
+       <!-- output -->
+       <!-- <remap from="grid_map" to="/map"/> -->
+       <remap from="octomap_grid" to="/map"/>
+
+       <!-- RTAB-Map's parameters -->
+       <param name="Reg/Strategy"                 type="string" value="1"/>
+       <param name="Reg/Force3DoF"                type="string" value="true"/>
+       <param name="GridGlobal/MinSize"           type="string" value="20"/>
+
+       <!-- localization mode -->
+       <param name="Mem/IncrementalMemory" type="string" value="true"/>
     </node>
 
     <!-- Visualisation RTAB-Map -->
