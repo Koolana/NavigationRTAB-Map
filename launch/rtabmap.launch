@@ -369,6 +369,7 @@
        <!-- output -->
        <!-- <remap from="grid_map" to="/map"/> -->
        <remap from="octomap_grid" to="/map"/>
+       <!-- <remap from="/rtabmap/odom" to="/odom"/> -->
 
        <!-- RTAB-Map's parameters -->
        <param name="Reg/Strategy"                 type="string" value="1"/>
