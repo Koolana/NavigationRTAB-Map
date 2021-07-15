@@ -22,6 +22,7 @@
   <param name="robot_description" command="$(arg urdf_file)" /> -->
   <param name="robot_description" textfile="$(find stereo_nav)/urdf/model.urdf" />
 
+  <!-- For real robot - uncommit -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="false"/>
     <param name="rate" value="50" />
@@ -33,7 +34,7 @@
   </node>
 
   <include file="$(find stereo_nav)/launch/rtabmap.launch">
-     <arg name="rtabmap_args" value="--delete_db_on_start" />
+     <arg name="args" value="--delete_db_on_start" />
      <!-- <arg name="depth_topic" value="/camera/aligned_depth_to_color/image_raw" />  -->
      <!-- <arg name="rgb_topic" value="/camera/color/image_raw" /> -->
      <!-- <arg name="camera_info_topic" value="/camera/color/camera_info" /> -->
