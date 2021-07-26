@@ -11,6 +11,9 @@ import tf
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
+cmd_flag = False
+cmd_counter = 0
+
 def write_read(x):
     arduino.write(bytes(x, 'utf-8'))
     # arduino.flush();
@@ -24,9 +27,20 @@ def write_read(x):
     return data
 
 def callback(data):
-    msgToArduino = "v" + str(data.linear.x) + " " + str(data.angular.z)
-    print("Output msg: ", msgToArduino)
-    write_read(msgToArduino)
+    global cmd_flag
+    global cmd_counter
+
+    if not cmd_flag:
+        msgToArduino = "v" + str(data.linear.x) + " " + str(data.angular.z)
+        print("Output msg: ", msgToArduino)
+        write_read(msgToArduino)
+        cmd_flag = True
+    else:
+        if cmd_counter > 10:
+            cmd_flag = False
+            cmd_counter = 0
+        else:
+            cmd_counter += 1
 
 if __name__ == '__main__':
     arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
@@ -34,7 +48,7 @@ if __name__ == '__main__':
 
     topic = rospy.Publisher('odom', Odometry, queue_size=10)
     rospy.init_node('test_topic_publisher')
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(1) # 10hz
 
     rospy.Subscriber("cmd_vel", Twist, callback)
 
@@ -59,7 +73,7 @@ if __name__ == '__main__':
         current_time = rospy.Time.now()
 
         num = "o"
-        data = write_read(num)
+        data = arduino.readline()  # write_read(num)
         data = data.decode("utf-8").split("; ")
         print(data)
 

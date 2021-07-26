@@ -219,7 +219,15 @@ void Timer_finish()  {
   wheelImpR = 0;
   wheelImpL = 0;
 
-
+  printValue(V);  // linear velocity
+  printValue(omega);  // angular velocity
+  
+  printValue(yaw);  // yaw angle
+  printValue(x);  // x position
+  printValue(y);  // y position
+  
+  Serial.print("\n");
+  Serial.flush();
 }
 void Movement(int a,int b) {//move
   if (a < 13) {a = 0;}
