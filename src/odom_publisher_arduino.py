@@ -23,6 +23,11 @@ def write_read(x):
     data = arduino.readline()
     return data
 
+def callback(data):
+    msgToArduino = "v" + str(data.linear.x) + " " + str(data.angular.z)
+    print("Output msg: ", msgToArduino)
+    write_read(msgToArduino)
+
 if __name__ == '__main__':
     arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
     print(serial.VERSION)
@@ -30,6 +35,8 @@ if __name__ == '__main__':
     topic = rospy.Publisher('odom', Odometry, queue_size=10)
     rospy.init_node('test_topic_publisher')
     rate = rospy.Rate(10) # 10hz
+
+    rospy.Subscriber("cmd_vel", Twist, callback)
 
     odom_broadcaster = tf.TransformBroadcaster()
 
@@ -46,7 +53,7 @@ if __name__ == '__main__':
 
     time.sleep(1)  # waiting arduino
 
-    write_read("v0.1 0")
+    # write_read("v0.1 0")
 
     while not rospy.is_shutdown():
         current_time = rospy.Time.now()
