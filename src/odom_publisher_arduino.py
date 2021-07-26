@@ -13,7 +13,7 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
 def write_read(x):
     arduino.write(bytes(x, 'utf-8'))
-    arduino.flush();
+    # arduino.flush();
 
     if x[0] == 'v':
         time.sleep(1.0)
@@ -41,10 +41,12 @@ if __name__ == '__main__':
     vy = 0
     vth = 0
 
-    current_time = rospy.Time.now()  # Error !!!! после перепрошивки arduino
-    last_time = rospy.Time.now()   # Error !!!!
+    current_time = rospy.Time.now()
+    last_time = rospy.Time.now()
 
-    write_read("v0.2 0")
+    time.sleep(1)  # waiting arduino
+
+    write_read("v0.1 0")
 
     while not rospy.is_shutdown():
         current_time = rospy.Time.now()
