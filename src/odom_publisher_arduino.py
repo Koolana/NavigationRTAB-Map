@@ -11,8 +11,8 @@ import tf
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
-cmd_flag = False
-cmd_counter = 0
+current_msg = "p"
+input_msg_avaible = True
 
 def write_read(x):
     arduino.write(bytes(x, 'utf-8'))
@@ -27,20 +27,13 @@ def write_read(x):
     return data
 
 def callback(data):
-    global cmd_flag
-    global cmd_counter
+    global current_msg
+    global input_msg_avaible
 
-    if not cmd_flag:
-        msgToArduino = "v" + str(data.linear.x) + " " + str(data.angular.z)
-        print("Output msg: ", msgToArduino)
-        write_read(msgToArduino)
-        cmd_flag = True
-    else:
-        if cmd_counter > 10:
-            cmd_flag = False
-            cmd_counter = 0
-        else:
-            cmd_counter += 1
+    current_msg = "v" + str(data.linear.x) + " " + str(data.angular.z)
+    print("Update msg: ", current_msg)
+    input_msg_avaible = True
+
 
 if __name__ == '__main__':
     arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
@@ -73,7 +66,7 @@ if __name__ == '__main__':
         current_time = rospy.Time.now()
 
         num = "o"
-        data = arduino.readline()  # write_read(num)
+        data = write_read(num)
         data = data.decode("utf-8").split("; ")
         print(data)
 
@@ -122,6 +115,11 @@ if __name__ == '__main__':
 
         # publish the message
         topic.publish(odom)
+
+        if input_msg_avaible:
+            arduino.write(bytes(current_msg, 'utf-8'))
+            time.sleep(1)
+            input_msg_avaible = False
 
         last_time = current_time
 

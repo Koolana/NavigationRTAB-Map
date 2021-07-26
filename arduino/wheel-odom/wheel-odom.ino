@@ -218,16 +218,6 @@ void Timer_finish()  {
   
   wheelImpR = 0;
   wheelImpL = 0;
-
-  printValue(V);  // linear velocity
-  printValue(omega);  // angular velocity
-  
-  printValue(yaw);  // yaw angle
-  printValue(x);  // x position
-  printValue(y);  // y position
-  
-  Serial.print("\n");
-  Serial.flush();
 }
 void Movement(int a,int b) {//move
   if (a < 13) {a = 0;}
@@ -289,8 +279,8 @@ void get_messages_from_Serial()
           LinearVelocity = atof(strtok(buffer," "));//разделяем на скорости левого и правого колеса
           AngularVelocity = atof(strtok(NULL,  " "));
 
-          printValue(LinearVelocity, "LinearVelocity");
-          printValue(AngularVelocity, "AngularVelocity");
+//          printValue(LinearVelocity, "LinearVelocity");
+//          printValue(AngularVelocity, "AngularVelocity");
           
           settingSpeed = true;
 
@@ -328,7 +318,7 @@ void get_messages_from_Serial()
           SetSpeedR = 0;  
           SetSpeedL = 0;
           
-          Serial.print("Stop command");
+//          Serial.print("Stop command");
 
           break;
         }
