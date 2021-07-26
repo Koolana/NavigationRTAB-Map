@@ -13,6 +13,7 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
 def write_read(x):
     arduino.write(bytes(x, 'utf-8'))
+    arduino.flush();
 
     if x[0] == 'v':
         time.sleep(1.0)
@@ -23,7 +24,8 @@ def write_read(x):
     return data
 
 if __name__ == '__main__':
-    arduino = serial.Serial(port='/dev/ttyACM0', baudrate=57600, timeout=.1)
+    arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
+    print(serial.VERSION)
 
     topic = rospy.Publisher('odom', Odometry, queue_size=10)
     rospy.init_node('test_topic_publisher')
@@ -39,10 +41,10 @@ if __name__ == '__main__':
     vy = 0
     vth = 0
 
-    current_time = rospy.Time.now()
-    last_time = rospy.Time.now()
+    current_time = rospy.Time.now()  # Error !!!! после перепрошивки arduino
+    last_time = rospy.Time.now()   # Error !!!!
 
-    write_read("v1 0")
+    write_read("v0.2 0")
 
     while not rospy.is_shutdown():
         current_time = rospy.Time.now()
@@ -50,23 +52,26 @@ if __name__ == '__main__':
         num = "o"
         data = write_read(num)
         data = data.decode("utf-8").split("; ")
+        print(data)
 
-        if num is 'o' and len(data) >= 4:
+        if num is 'o' and len(data) >= 5:
             print("V = ", data[0])
-            print("Yaw = ", data[1])
-            print("x = ", data[2])
-            print("y = ", data[3])
+            print("Omega = ", data[1])
+
+            print("Yaw = ", data[2])
+            print("x = ", data[3])
+            print("y = ", data[4])
         else:
-            print(data)
+            # print(data)
             continue
 
-        x = float(data[2])
-        y = float(data[3])
-        th = float(data[1])
+        x = float(data[3])
+        y = float(data[4])
+        th = float(data[2])
 
         vx = float(data[0])
         vy = 0
-        vth = 0
+        vth = float(data[1])
 
         # since all odometry is 6DOF we'll need a quaternion created from yaw
         odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)

@@ -135,7 +135,7 @@ void reset_var() {
 }
 void Init() {
   Wire.begin();
-  Serial.begin(57600);//Initialize the Serial port
+  Serial.begin(115200);  // 57600  //Initialize the Serial port
   while (!Serial) ; // while the Serial stream is not open, do nothing
   MotorsInit();
   EncoderInit();//Initialize encoder
@@ -192,8 +192,8 @@ void Timer_finish()  {
   wheelSpeedL = double(wheelImpL / dT); // число импульсов за сек
 
   // пройденный колесом путь, м
-  wheelRightS = ((wheelSpeedR / 663) * 2 * 3.14 *  R) ; // метры L = 2*PI*R*n/N 
-  wheelLeftS  = ((wheelSpeedL / 663) * 2 * 3.14 *  R); //* 
+  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R);  // 663  // метры L = 2*PI*R*n/N 
+  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R);  //* 
   
   // линейная скорость колеса
   wheelRightV = wheelRightS/ 1; // mетры за сек
@@ -292,6 +292,8 @@ void get_messages_from_Serial()
         case 'd'://если d, то печатаем текущие значения полно
         {
           printValue(V, "V");
+          printValue(omega, "Omega");
+          
           printValue(yaw, "Yaw");
           printValue(x, "x");
           printValue(y, "y");
@@ -301,10 +303,12 @@ void get_messages_from_Serial()
 
         case 'o'://если d, то печатаем текущие значения полно
         {
-          printValue(V);
-          printValue(yaw);
-          printValue(x);
-          printValue(y);
+          printValue(V);  // linear velocity
+          printValue(omega);  // angular velocity
+          
+          printValue(yaw);  // yaw angle
+          printValue(x);  // x position
+          printValue(y);  // y position
 
           break;
         }
