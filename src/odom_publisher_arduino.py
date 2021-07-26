@@ -30,9 +30,10 @@ def callback(data):
     global current_msg
     global input_msg_avaible
 
-    current_msg = "v" + str(data.linear.x) + " " + str(data.angular.z)
-    print("Update msg: ", current_msg)
-    input_msg_avaible = True
+    if not input_msg_avaible:
+        current_msg = "v" + str(data.linear.x) + " " + str(data.angular.z)
+        print("Update msg: ", current_msg)
+        input_msg_avaible = True
 
 
 if __name__ == '__main__':
