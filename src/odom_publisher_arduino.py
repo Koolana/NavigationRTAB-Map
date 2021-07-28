@@ -41,6 +41,7 @@ def moveCallback(event):
 
     if input_msg_avaible:
         arduino.write(bytes(current_msg, 'utf-8'))
+        arduino.flush()
         input_msg_avaible = False
 
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
 
     rospy.Subscriber("cmd_vel", Twist, callback)
 
-    rospy.Timer(rospy.Duration(1.5), moveCallback)
+    rospy.Timer(rospy.Duration(1.1), moveCallback)
 
     odom_broadcaster = tf.TransformBroadcaster()
 
