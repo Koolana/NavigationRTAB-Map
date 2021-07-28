@@ -31,9 +31,17 @@ def callback(data):
     global input_msg_avaible
 
     if not input_msg_avaible:
-        current_msg = "v" + str(data.linear.x) + " " + str(data.angular.z)
+        current_msg = "v" + "{0:.2f}".format(data.linear.x) + \
+                      " " + "{0:.2f}".format(data.angular.z)
         print("Update msg: ", current_msg)
         input_msg_avaible = True
+
+def moveCallback(event):
+    global input_msg_avaible
+
+    if input_msg_avaible:
+        arduino.write(bytes(current_msg, 'utf-8'))
+        input_msg_avaible = False
 
 
 if __name__ == '__main__':
@@ -42,9 +50,11 @@ if __name__ == '__main__':
 
     topic = rospy.Publisher('odom', Odometry, queue_size=10)
     rospy.init_node('test_topic_publisher')
-    rate = rospy.Rate(1) # 10hz
+    rate = rospy.Rate(10) # 10hz
 
     rospy.Subscriber("cmd_vel", Twist, callback)
+
+    rospy.Timer(rospy.Duration(1.5), moveCallback)
 
     odom_broadcaster = tf.TransformBroadcaster()
 
@@ -67,60 +77,52 @@ if __name__ == '__main__':
         current_time = rospy.Time.now()
 
         num = "o"
-        data = write_read(num)
+        data = arduino.readline()  # write_read(num)
         data = data.decode("utf-8").split("; ")
         print(data)
 
-        if num is 'o' and len(data) >= 5:
+        if num is 'o' and len(data) >= 6:
             print("V = ", data[0])
             print("Omega = ", data[1])
 
             print("Yaw = ", data[2])
             print("x = ", data[3])
             print("y = ", data[4])
-        else:
-            # print(data)
-            continue
 
-        x = float(data[3])
-        y = float(data[4])
-        th = float(data[2])
+            x = float(data[3])
+            y = float(data[4])
+            th = float(data[2])
 
-        vx = float(data[0])
-        vy = 0
-        vth = float(data[1])
+            vx = float(data[0])
+            vy = 0
+            vth = float(data[1])
 
-        # since all odometry is 6DOF we'll need a quaternion created from yaw
-        odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
+            # since all odometry is 6DOF we'll need a quaternion created from yaw
+            odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
 
-        # first, we'll publish the transform over tf
-        odom_broadcaster.sendTransform(
-            (x, y, 0.),
-            odom_quat,
-            current_time,
-            "base_footprint",
-            "odom"
-        )
+            # first, we'll publish the transform over tf
+            odom_broadcaster.sendTransform(
+                (x, y, 0.),
+                odom_quat,
+                current_time,
+                "base_footprint",
+                "odom"
+            )
 
-        # next, we'll publish the odometry message over ROS
-        odom = Odometry()
-        odom.header.stamp = current_time
-        odom.header.frame_id = "odom"
+            # next, we'll publish the odometry message over ROS
+            odom = Odometry()
+            odom.header.stamp = current_time
+            odom.header.frame_id = "odom"
 
-        # set the position
-        odom.pose.pose = Pose(Point(x, y, 0.), Quaternion(*odom_quat))
+            # set the position
+            odom.pose.pose = Pose(Point(x, y, 0.), Quaternion(*odom_quat))
 
-        # set the velocity
-        odom.child_frame_id = "base_footprint"
-        odom.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
+            # set the velocity
+            odom.child_frame_id = "base_footprint"
+            odom.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0, 0, vth))
 
-        # publish the message
-        topic.publish(odom)
-
-        if input_msg_avaible:
-            arduino.write(bytes(current_msg, 'utf-8'))
-            time.sleep(1)
-            input_msg_avaible = False
+            # publish the message
+            topic.publish(odom)
 
         last_time = current_time
 

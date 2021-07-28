@@ -204,9 +204,9 @@ void Timer_finish()  {
   omegaLeft  = wheelLeftV/R;
   
   // фактическая линейная скорость центра робота
-  V     = (R/2)*(omegaRight + omegaLeft);//m/s
+  V     = (R/2)*(omegaRight * (DirectionR ? -1 : 1) + omegaLeft * (DirectionL ? -1 : 1));//m/s
   // фактическая угловая скорость поворота робота
-  omega = (R/L)*(omegaRight - omegaLeft);
+  omega = (R/L)*(omegaRight * (DirectionR ? -1 : 1) - omegaLeft * (DirectionL ? -1 : 1));
 
   yaw+=(omega * dT);    // направление в рад
   x += V*cos(yaw) * dT; // в метрах
@@ -218,6 +218,16 @@ void Timer_finish()  {
   
   wheelImpR = 0;
   wheelImpL = 0;
+
+  printValue(V);  // linear velocity
+  printValue(omega);  // angular velocity
+  
+  printValue(yaw);  // yaw angle
+  printValue(x);  // x position
+  printValue(y);  // y position
+  
+  Serial.print("\n");
+  Serial.flush();
 }
 void Movement(int a,int b) {//move
   if (a < 13) {a = 0;}
@@ -296,6 +306,8 @@ void get_messages_from_Serial()
           printValue(x, "x");
           printValue(y, "y");
 
+          Serial.print("\n");
+
           break;
         }
 
@@ -307,6 +319,7 @@ void get_messages_from_Serial()
           printValue(yaw);  // yaw angle
           printValue(x);  // x position
           printValue(y);  // y position
+          Serial.print("\n");
 
           break;
         }
@@ -318,7 +331,8 @@ void get_messages_from_Serial()
           SetSpeedR = 0;  
           SetSpeedL = 0;
           
-//          Serial.print("Stop command");
+          Serial.print("Stop command");
+          Serial.print("\n");
 
           break;
         }
@@ -328,8 +342,8 @@ void get_messages_from_Serial()
           break;
       }
     }
-    Serial.print("\n");
-    Serial.flush();
+
+//    Serial.flush();
   }
 }
 
