@@ -154,8 +154,10 @@ void keyboard(){
     }
     if ((inString.length() > 0) and settingSpeed){delay(5000); settingSpeed = false; SetSpeedR = inString.toInt(); SetSpeedL = SetSpeedR; analogWrite (MotorRpwm, SetSpeedR); analogWrite (MotorLpwm, SetSpeedL);}
     if ((inString.length() > 0) and setDistance ){
-      setDistance = false; goDistR = true; goDistL = true; 
-      pulseCountR = (int)((float)inString.toInt()/WK); pulseCountL = pulseCountR;  
+      setDistance = false; goDistR = true; goDistL = true;
+       
+      pulseCountR = (int)((float)inString.toInt()/WK/1);
+      pulseCountL = (int)((float)inString.toInt()/WK/1);
     }
   }
   t2start();  // начать счёт времени, если уже начат, будет продолжаться старый
