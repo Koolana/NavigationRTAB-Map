@@ -79,7 +79,7 @@ double wheelRightV = 0;
 double omegaRight = 0;
 double omegaLeft = 0;
 double R = 0.0682;
-double L = 0.275;
+double L = 0.174;  // 0.275
 double V = 0;
 double omega = 0;
 double Vl = 0;
@@ -194,8 +194,8 @@ void Timer_finish()  {
   wheelSpeedL = double(wheelImpL / dT); // число импульсов за сек
 
   // пройденный колесом путь, м
-  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R);  // 663  // метры L = 2*PI*R*n/N
-  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R);  //*
+  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R * 0.8564);  // 663  // метры L = 2*PI*R*n/N
+  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R * 1.1436);  //*
 
   // линейная скорость колеса
   wheelRightV = wheelRightS/ 1; // mетры за сек
