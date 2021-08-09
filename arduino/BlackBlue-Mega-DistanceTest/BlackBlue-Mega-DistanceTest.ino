@@ -156,8 +156,8 @@ void keyboard(){
     if ((inString.length() > 0) and setDistance ){
       setDistance = false; goDistR = true; goDistL = true;
        
-      pulseCountR = (int)((float)inString.toInt()/WK/1);
-      pulseCountL = (int)((float)inString.toInt()/WK/1);
+      pulseCountR = (int)((float)inString.toInt()/WK/1.003016);
+      pulseCountL = (int)((float)inString.toInt()/WK/0.996984);
     }
   }
   t2start();  // начать счёт времени, если уже начат, будет продолжаться старый
