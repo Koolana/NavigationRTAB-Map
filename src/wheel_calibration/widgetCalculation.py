@@ -38,5 +38,5 @@ class WidgetCalculation(QtWidgets.QLabel):
 
     def receiveFinalPoint(self, point):
         print("WWWWWWWWWWWWW", point)
-        self.te1.append(str(point[0]) + " " + str(point[1]) + "\n")
+        self.te1.append(str(point[0]) + " " + str(point[1]))
         self.update()

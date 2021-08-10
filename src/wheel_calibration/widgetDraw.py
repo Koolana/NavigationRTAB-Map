@@ -2,6 +2,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtCore import QPoint, Qt
 
+import time
+
 class WidgetDraw(QtWidgets.QLabel):
     scaleDiv = 0.5  # деление шкалы в метрах
     numVerticalLine = 10
@@ -133,8 +135,11 @@ class WidgetDraw(QtWidgets.QLabel):
         self.update()
         # self.listTarget.append(target)
 
-    def clearTrajectoryPoints(self):
+    def reset(self):
+        print("!!!!!!!!!!!!!!!!!!!!!!")
         self.trajectoryPoints = [[0, 0]]
+        self.robotPos = [0, 0]
+
         self.update()
 
     def addTrajectoryPoint(self, point):
