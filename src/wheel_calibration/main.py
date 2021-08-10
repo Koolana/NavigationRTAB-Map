@@ -1,6 +1,8 @@
 import sys
 from widgetDraw import WidgetDraw
 from widgetTargetList import WidgetTargetList
+from moveController import MoveController
+from widgetCalculation import WidgetCalculation
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
@@ -8,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
 
 if __name__ == '__main__':
     winH = 800
-    winW = 700
+    winW = 1000
 
     app = QApplication(sys.argv)
 
@@ -31,10 +33,23 @@ if __name__ == '__main__':
 
     globalLayout.addLayout(drawLayout, 5)
 
-    wtl = WidgetTargetList(w)
-    globalLayout.addWidget(wtl, 1)
+    verticalLayout = QVBoxLayout()
 
+    wtl = WidgetTargetList(w)
     wtl.c.sendTargets.connect(wd.receiveNewTargets)
+    verticalLayout.addWidget(wtl, 3)
+
+    wc = WidgetCalculation(w)
+    verticalLayout.addWidget(wc, 2)
+
+    globalLayout.addLayout(verticalLayout, 1)
+
+    mc = MoveController(w)
+    wtl.c.sendTargets.connect(mc.receiveNewTargets)
+    btnStart.clicked.connect(mc.startMoving)
+
+    mc.c.sendTrajPoint.connect(wd.addTrajectoryPoint)
+    mc.c.finalPosition.connect(wc.receiveFinalPoint)
 
     w.setWindowTitle('Wheel calibration')
     w.show()

@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPen, QColor
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, Qt
 
 class WidgetDraw(QtWidgets.QLabel):
     scaleDiv = 0.5  # деление шкалы в метрах
@@ -10,8 +10,10 @@ class WidgetDraw(QtWidgets.QLabel):
     robotLenX = 0.25
     robotLenY = 0.25
 
-    robotPos = QPoint(0, 0)
+    robotPos = [0, 0]
     robotDrawShift = QPoint(0, 0)
+
+    trajectoryPoints = [[0, 0]]
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -57,12 +59,13 @@ class WidgetDraw(QtWidgets.QLabel):
                 qp.setPen(pen)
 
             qp.rotate(-90)
-            qp.drawText(-self.size().height() + 10, self.size().width() / 10 * hl - 2, str((self.numVerticalLine / 2 - hl) * self.scaleDiv) + " m")
+            qp.drawText(-self.size().height() + 10, self.size().width() / 10 * hl - 2, str(-(self.numVerticalLine / 2 - hl) * self.scaleDiv) + " m")
             qp.rotate(90)
             qp.drawLine(0, self.size().height() / 10 * hl, self.size().width(), self.size().height() / 10 * hl)
 
         self.drawRobot(qp)
         self.drawTargets(qp)
+        self.drawTrajectory(qp)
         # qp.drawRect(QtCore.QRect(self.begin, self.end))
 
     # def mousePressEvent(self, event):
@@ -80,10 +83,8 @@ class WidgetDraw(QtWidgets.QLabel):
         qp.save()
         qp.setBrush(QColor(0, 0, 0, 100))
 
-        currRobotPos = self.robotPos + self.robotDrawShift
-
-        qp.drawRect(currRobotPos.x() - self.drawRobotWidth / 2, \
-                    currRobotPos.y() - self.drawRobotHeight / 2, \
+        qp.drawRect(self.robotPos[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2 - self.drawRobotWidth / 2, \
+                    -self.robotPos[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2 - self.drawRobotHeight / 2, \
                     self.drawRobotWidth, self.drawRobotHeight)
         qp.restore()
 
@@ -92,9 +93,30 @@ class WidgetDraw(QtWidgets.QLabel):
         qp.setBrush(QColor(0, 255, 0, 100))
 
         for target in self.listTarget:
-            qp.drawRect(-(target[0] / self.scaleDiv * self.size().width() / self.numVerticalLine) + self.size().width() / 2 - 10, \
-            -(target[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine) + self.size().height() / 2 - 10, \
+            qp.drawRect(target[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2 - 10, \
+            -target[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2 - 10, \
             20, 20)
+
+        qp.restore()
+
+    def drawTrajectory(self, qp):
+        qp.save()
+
+        pen = QPen(Qt.blue, 2, Qt.SolidLine)
+        pen.setStyle(Qt.DashDotLine)
+        qp.setPen(pen)
+
+        prevPoint = []
+        for point in self.trajectoryPoints:
+            if len(prevPoint) == 0:
+                prevPoint = point
+                continue
+
+            qp.drawLine(prevPoint[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
+            -prevPoint[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2, \
+            point[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
+            -point[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2)
+            prevPoint = point
 
         qp.restore()
 
@@ -110,6 +132,17 @@ class WidgetDraw(QtWidgets.QLabel):
         print(self.listTarget)
         self.update()
         # self.listTarget.append(target)
+
+    def clearTrajectoryPoints(self):
+        self.trajectoryPoints = [[0, 0]]
+        self.update()
+
+    def addTrajectoryPoint(self, point):
+        if abs(self.trajectoryPoints[-1][0] - point[0]) > 0.1 or abs(self.trajectoryPoints[-1][1] - point[1]) > 0.1:
+            self.robotPos = [point[0], point[1]]
+            print(self.robotPos)
+            self.trajectoryPoints.append(point)
+            self.update()
 
     #
     # def drawRectangles(self, qp):
