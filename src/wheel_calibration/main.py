@@ -52,7 +52,8 @@ if __name__ == '__main__':
     verticalLayout.addWidget(wtl, 3)
 
     wc = WidgetCalculation(w)
-    verticalLayout.addWidget(wc, 2)
+    wtl.c.sendData.connect(wc.changeTestType)
+    verticalLayout.addWidget(wc, 8)
 
     globalLayout.addLayout(verticalLayout, 1)
 
@@ -62,6 +63,8 @@ if __name__ == '__main__':
     btnStop.clicked.connect(mc.stopMoving)
     btnNextItr.clicked.connect(mc.resetMoving)
     btnChangeRDir.clicked.connect(mc.changeRotateDir)
+
+    wtl.c.sendData.connect(mc.changeData)
 
     mc.c.sendTrajPoint.connect(wd.addTrajectoryPoint)
     mc.c.finalPosition.connect(wc.receiveFinalPoint)

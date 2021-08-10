@@ -28,12 +28,16 @@ class MoveController(QtCore.QObject):
     err = 0.1
 
     finish = False
-    isRotate = False
-
-    currTarget = 0
-    targetRotate = 0
+    # isRotate = False
+    #
+    # currTarget = 0
+    # targetRotate = 0
 
     isClockwise = True
+
+    a = 1
+    testType = 0
+    state = 0
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -75,68 +79,122 @@ class MoveController(QtCore.QObject):
 
         self.c.sendTrajPoint.emit([x, y])
 
-        print(len(self.listTargets), self.currTarget)
+        if self.testType == 0:
+            if abs(abs(x) - self.a) < self.err:
+                self.finish = True
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
 
-        if len(self.listTargets) == self.currTarget or len(self.listTargets) == 0:
-            if abs(vx) < 0.01 and self.finish == True:
+            if abs(vx) < 0.01 and self.finish:
+                self.c.finalPosition.emit([x, y])
+                self.finish = False
+        else:
+            if self.state == 0 and abs(abs(x) - self.a) < self.err:
+                self.state = 1
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(True, (-1 if self.isClockwise else 1) * self.maxRotate)
+
+            if self.state == 1 and abs(abs(th) - math.pi / 2) < 0.05:
+                self.state = 2
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(False, self.maxSpeed)
+
+            if self.state == 2 and abs(abs(y) - self.a) < self.err:
+                self.state = 3
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(True, (-1 if self.isClockwise else 1) * self.maxRotate)
+
+            if self.state == 3 and abs(abs(th) - math.pi) < 0.05:
+                self.state = 4
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(False, self.maxSpeed)
+
+            if self.state == 4 and abs(x) < self.err:
+                self.state = 5
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(True, (-1 if self.isClockwise else 1) * self.maxRotate)
+
+            if self.state == 5 and abs(abs(th) - 3 * math.pi / 2) < 0.05:
+                self.state = 6
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(False, self.maxSpeed)
+
+            if self.state == 6 and abs(y) < self.err:
+                self.state = 7
+                self.finish = True
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+
+            if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y])
                 self.finish = False
 
-            return
-
-        # print(abs(x - self.listTargets[self.currTarget][0]), abs(y - self.listTargets[self.currTarget][1]))
-        if abs(x - self.listTargets[self.currTarget][0]) < self.err and abs(y - self.listTargets[self.currTarget][1]) < self.err and not self.isRotate:
-            self.arduino.write(bytes('p', 'utf-8'))
-
-            time.sleep(1)
-
-            self.currTarget += 1
-            self.isRotate = True
-
-            if len(self.listTargets) == self.currTarget:
-                self.finish = True
-            else:
-                # (y < self.listTargets[self.currTarget][1] or x > self.listTargets[self.currTarget][0]) and
-                if not self.isClockwise:
-                    if abs(x - self.listTargets[self.currTarget][0]) > abs(y - self.listTargets[self.currTarget][1]):
-                        if y > self.listTargets[self.currTarget][1]:
-                            self.targetRotate += math.pi / 2 - math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
-                        else:
-                            self.targetRotate += math.pi / 2 + math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
-                    else:
-                        if x > self.listTargets[self.currTarget][0]:
-                            self.targetRotate += math.pi / 2 - math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
-                        else:
-                            self.targetRotate += math.pi / 2 + math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
-
-                    self.move_callback(True, self.maxRotate)
-                    print("Left")
-
-                # (y > self.listTargets[self.currTarget][1] or x < self.listTargets[self.currTarget][0]) and
-                if self.isClockwise:
-                    if abs(x - self.listTargets[self.currTarget][0]) > abs(y - self.listTargets[self.currTarget][1]):
-                        if y > self.listTargets[self.currTarget][1]:
-                            self.targetRotate -= math.pi / 2 - math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
-                        else:
-                            self.targetRotate -= math.pi / 2 + math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
-                    else:
-                        if x > self.listTargets[self.currTarget][0]:
-                            self.targetRotate -= math.pi / 2 - math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
-                        else:
-                            self.targetRotate -= math.pi / 2 + math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
-
-                    self.move_callback(True, -self.maxRotate)
-                    print("Right")
-
-        # print(self.finish, self.targetRotate, th)
-        if self.isRotate and not self.finish:
-            if abs(th) > abs(self.targetRotate):
-                self.arduino.write(bytes('p', 'utf-8'))
-
-                time.sleep(1)
-
-                self.move_callback(False, self.maxSpeed)
-                self.isRotate = False
+        #
+        #
+        # print(len(self.listTargets), self.currTarget)
+        #
+        # if len(self.listTargets) == self.currTarget or len(self.listTargets) == 0:
+        #     if abs(vx) < 0.01 and self.finish == True:
+        #         self.c.finalPosition.emit([x, y])
+        #         self.finish = False
+        #
+        #     return
+        #
+        # if abs(x - self.listTargets[self.currTarget][0]) < self.err and abs(y - self.listTargets[self.currTarget][1]) < self.err and not self.isRotate:
+        #     self.arduino.write(bytes('p', 'utf-8'))
+        #
+        #     time.sleep(1)
+        #
+        #     self.currTarget += 1
+        #     self.isRotate = True
+        #
+        #     if len(self.listTargets) == self.currTarget:
+        #         self.finish = True
+        #     else:
+        #         if not self.isClockwise:
+        #             if abs(x - self.listTargets[self.currTarget][0]) > abs(y - self.listTargets[self.currTarget][1]):
+        #                 if y > self.listTargets[self.currTarget][1]:
+        #                     self.targetRotate += math.pi / 2 - math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
+        #                 else:
+        #                     self.targetRotate += math.pi / 2 + math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
+        #             else:
+        #                 if x > self.listTargets[self.currTarget][0]:
+        #                     self.targetRotate += math.pi / 2 - math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
+        #                 else:
+        #                     self.targetRotate += math.pi / 2 + math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
+        #
+        #             self.move_callback(True, self.maxRotate)
+        #             print("Left")
+        #
+        #         if self.isClockwise:
+        #             if abs(x - self.listTargets[self.currTarget][0]) > abs(y - self.listTargets[self.currTarget][1]):
+        #                 if y > self.listTargets[self.currTarget][1]:
+        #                     self.targetRotate -= math.pi / 2 - math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
+        #                 else:
+        #                     self.targetRotate -= math.pi / 2 + math.tan(abs(y - self.listTargets[self.currTarget][1]) / abs(x - self.listTargets[self.currTarget][0]))
+        #             else:
+        #                 if x > self.listTargets[self.currTarget][0]:
+        #                     self.targetRotate -= math.pi / 2 - math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
+        #                 else:
+        #                     self.targetRotate -= math.pi / 2 + math.tan(abs(x - self.listTargets[self.currTarget][0]) / abs(y - self.listTargets[self.currTarget][1]))
+        #
+        #             self.move_callback(True, -self.maxRotate)
+        #             print("Right")
+        #
+        # if self.isRotate and not self.finish:
+        #     if abs(th) > abs(self.targetRotate):
+        #         self.arduino.write(bytes('p', 'utf-8'))
+        #
+        #         time.sleep(1)
+        #
+        #         self.move_callback(False, self.maxSpeed)
+        #         self.isRotate = False
 
     def move_callback(self, isRotate, speed):
         if isRotate:
@@ -152,6 +210,7 @@ class MoveController(QtCore.QObject):
 
     def startMoving(self):
         self.move_callback(False, self.maxSpeed)
+        self.state = 0
 
     def stopMoving(self):
         self.arduino.write(bytes('p', 'utf-8'))
@@ -166,8 +225,15 @@ class MoveController(QtCore.QObject):
         self.finish = False
         self.isRotate = False
 
+        self.state = 0
+
     def changeRotateDir(self):
         self.isClockwise = not self.isClockwise
+
+    def changeData(self, type, a):
+        self.testType = type
+        self.a = a
+        print("Changed", type, a)
 
     def receiveNewTargets(self, targets):
         self.listTargets = targets
