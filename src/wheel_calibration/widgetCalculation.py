@@ -85,8 +85,8 @@ class WidgetCalculation(QtWidgets.QLabel):
 
             Cr = 0 if ((1/Ed)+1) == 0 else (2/((1/Ed)+1))
 
-            self.finalKoefsLabel.setText("Cl = " + "%.4s" % (Cl) + "\n" + \
-                                         "Cr = " + "%.4s" % (Cr))
+            self.finalKoefsLabel.setText("Cl = " + "%.4f" % (Cl) + "\n" + \
+                                         "Cr = " + "%.4f" % (Cr))
             self.update()
         else:
             delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
@@ -111,9 +111,9 @@ class WidgetCalculation(QtWidgets.QLabel):
             Cl = 0 if (Ed + 1) == 0 else (2 / (Ed + 1))
             Cr = 0 if ((1 / Ed) + 1) == 0 else (2/((1/Ed)+1))
 
-            self.finalKoefsLabel.setText("b_new = " + "%.4s" % (b_new) + "\n" \
-                                         "Cl = " + "%.4s" % (Cl) + "\n" + \
-                                         "Cr = " + "%.4s" % (Cr))
+            self.finalKoefsLabel.setText("b_new = " + "%.4f" % (b_new) + "\n" \
+                                         "Cl = " + "%.4f" % (Cl) + "\n" + \
+                                         "Cr = " + "%.4f" % (Cr))
             self.update()
 
     def changeTestType(self, type, a):
@@ -122,5 +122,5 @@ class WidgetCalculation(QtWidgets.QLabel):
 
     def receiveFinalPoint(self, point):
         print("WWWWWWWWWWWWW", point)
-        self.te1.append(str(point[0]) + " " + str(point[1]))
+        self.te1.append("%.3f" % (point[0]) + " " + "%.3f" % (point[1]))
         self.update()

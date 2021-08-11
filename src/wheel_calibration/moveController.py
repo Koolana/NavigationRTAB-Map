@@ -22,10 +22,10 @@ class MoveController(QtCore.QObject):
     listTargets = []
     currentPos = []
 
-    maxSpeed = 0.2
+    maxSpeed = 0.1
     maxRotate = 0.3
 
-    err = 0.1
+    err = 0.05
 
     finish = False
     # isRotate = False
@@ -64,6 +64,8 @@ class MoveController(QtCore.QObject):
         data = self.arduino.readline()
         data = data.decode("utf-8").split("; ")
 
+        data = list(filter(None, data))
+
         if len(data) != 6:
             return
 
@@ -80,7 +82,7 @@ class MoveController(QtCore.QObject):
         self.c.sendTrajPoint.emit([x, y])
 
         if self.testType == 0:
-            if abs(abs(x) - self.a) < self.err:
+            if abs(abs(x) - self.a) < self.err and abs(vx) > 0.01:
                 self.finish = True
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
@@ -127,6 +129,12 @@ class MoveController(QtCore.QObject):
 
             if self.state == 6 and abs(y) < self.err:
                 self.state = 7
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(True, (-1 if self.isClockwise else 1) * self.maxRotate)
+
+            if self.state == 7 and abs(abs(th) - 2 * math.pi) < 0.05:
+                self.state = 8
                 self.finish = True
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
