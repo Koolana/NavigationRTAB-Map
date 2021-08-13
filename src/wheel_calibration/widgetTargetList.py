@@ -42,6 +42,11 @@ class WidgetTargetList(QtWidgets.QLabel):
         radiobutton.toggled.connect(self.onClicked)
         pointLayout.addWidget(radiobutton, 1)
 
+        radiobutton = QRadioButton("Сircle")
+        radiobutton.typeTest = 2
+        radiobutton.toggled.connect(self.onClicked)
+        pointLayout.addWidget(radiobutton, 1)
+
         self.btnSave = QPushButton('Save')
         self.btnSave.clicked.connect(self.sendTestData)
         pointLayout.addWidget(self.btnSave, 1)

@@ -49,6 +49,7 @@ if __name__ == '__main__':
 
     wtl = WidgetTargetList(w)
     wtl.c.sendTargets.connect(wd.receiveNewTargets)
+    wtl.c.sendData.connect(wd.changeTestData)
     verticalLayout.addWidget(wtl, 3)
 
     wc = WidgetCalculation(w)
