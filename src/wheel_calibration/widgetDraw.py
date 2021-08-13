@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtCore import QPoint, Qt
 
 import time
+import random
 
 class WidgetDraw(QtWidgets.QLabel):
     scaleDiv = 0.5  # деление шкалы в метрах
@@ -15,10 +16,15 @@ class WidgetDraw(QtWidgets.QLabel):
     robotPos = [0, 0]
     robotDrawShift = QPoint(0, 0)
 
-    trajectoryPoints = [[0, 0]]
-
     testType = 0
     param = 1
+
+    numIter = 0
+
+    isClockwise = True
+
+    currentIterColor = QColor(0, 0, 255, 255)
+    trajectoryPoints = [[[0, 0], currentIterColor]]
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -101,7 +107,7 @@ class WidgetDraw(QtWidgets.QLabel):
     def drawTarget(self, qp):
         qp.save()
 
-        pen = QPen(Qt.green, 2, Qt.SolidLine)
+        pen = QPen(QColor(20, 200, 20, 255), 2, Qt.DotLine)
         qp.setPen(pen)
 
         if self.testType == 0:
@@ -111,16 +117,14 @@ class WidgetDraw(QtWidgets.QLabel):
                         0 + self.size().height() / 2)
 
         if self.testType == 1:
-            # -self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine
             qp.drawRect(0 + self.size().width() / 2,
-                        0 + self.size().height() / 2,
+                        (0 if self.isClockwise else -self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine) + self.size().height() / 2,
                         self.param / self.scaleDiv * self.size().width() / self.numVerticalLine,
                         self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine)
 
         if self.testType == 2:
-            # -2 * self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine
             qp.drawEllipse(-2 * self.param / self.scaleDiv * self.size().width() / self.numVerticalLine / 2 + self.size().width() / 2,
-                           0 + self.size().height() / 2,
+                           (0 if self.isClockwise else -2 * self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine) + self.size().height() / 2,
                            2 * self.param / self.scaleDiv * self.size().width() / self.numVerticalLine,
                            2 * self.param / self.scaleDiv * self.size().height() / self.numHorizontalLine)
 
@@ -129,7 +133,7 @@ class WidgetDraw(QtWidgets.QLabel):
     def drawTrajectory(self, qp):
         qp.save()
 
-        pen = QPen(Qt.blue, 2, Qt.DotLine)
+        pen = QPen(self.currentIterColor, 2, Qt.SolidLine)
         qp.setPen(pen)
 
         prevPoint = []
@@ -138,13 +142,20 @@ class WidgetDraw(QtWidgets.QLabel):
                 prevPoint = point
                 continue
 
-            qp.drawLine(prevPoint[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
-            -prevPoint[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2, \
-            point[0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
-            -point[1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2)
-            prevPoint = point
+            pen.setColor(point[1])
+            qp.setPen(pen)
 
+            qp.drawLine(prevPoint[0][0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
+            -prevPoint[0][1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2, \
+            point[0][0] / self.scaleDiv * self.size().width() / self.numVerticalLine + self.size().width() / 2, \
+            -point[0][1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2)
+
+            prevPoint = point
         qp.restore()
+
+    def swapRotateDir(self):
+        self.isClockwise = not self.isClockwise
+        self.update()
 
     def changeTestData(self, type, param):
         self.param = param
@@ -152,12 +163,21 @@ class WidgetDraw(QtWidgets.QLabel):
         print(self.param, self.testType)
         self.update()
 
+    def newTestIteration(self, numIter):
+        self.numIter = numIter
+
+        self.currentIterColor = QColor(random.randint(0, 255),
+                                       random.randint(0, 255),
+                                       random.randint(0, 255), 255)
+
     def resizeEvent(self, event):
         self.drawRobotWidth = self.robotLenX / self.scaleDiv * self.size().width() / self.numVerticalLine
         self.drawRobotHeight = self.robotLenY / self.scaleDiv * self.size().height() / self.numHorizontalLine
 
         self.robotDrawShift.setX(self.size().width() / 2)
         self.robotDrawShift.setY(self.size().height() / 2)
+
+        self.update()
 
     def receiveNewTargets(self, targets):
         self.listTarget = targets
@@ -167,14 +187,16 @@ class WidgetDraw(QtWidgets.QLabel):
 
     def reset(self):
         print("!!!!!!!!!!!!!!!!!!!!!!")
-        self.trajectoryPoints = [[0, 0]]
+        self.currentIterColor = QColor(0, 0, 255, 255)
+
+        self.trajectoryPoints = [[[0, 0], self.currentIterColor]]
         self.robotPos = [0, 0]
 
         self.update()
 
     def addTrajectoryPoint(self, point):
-        if abs(self.trajectoryPoints[-1][0] - point[0]) > 0.05 or abs(self.trajectoryPoints[-1][1] - point[1]) > 0.05:
+        if abs(self.trajectoryPoints[-1][0][0] - point[0]) > 0.03 or abs(self.trajectoryPoints[-1][0][1] - point[1]) > 0.03:
             self.robotPos = [point[0], point[1]]
             print(self.robotPos)
-            self.trajectoryPoints.append(point)
+            self.trajectoryPoints.append([point, self.currentIterColor])
             self.update()

@@ -3,16 +3,37 @@ from widgetDraw import WidgetDraw
 from widgetTargetList import WidgetTargetList
 from moveController import MoveController
 from widgetCalculation import WidgetCalculation
+from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
                             QHBoxLayout, QVBoxLayout, QLabel, QTextEdit
 
+isRightCircleArrow = True
+
+rightCircleArrow = None
+leftCircleArrow = None
+
+def swapCircleArrow():
+    global isRightCircleArrow
+    global leftCircleArrow
+    global rightCircleArrow
+
+    if isRightCircleArrow:
+        isRightCircleArrow = False
+        btnChangeRDir.setIcon(leftCircleArrow)
+    else:
+        isRightCircleArrow = True
+        btnChangeRDir.setIcon(rightCircleArrow)
+
 if __name__ == '__main__':
-    winH = 800
-    winW = 1000
+    winH = 1080
+    winW = 1400
 
     app = QApplication(sys.argv)
+
+    rightCircleArrow = QIcon('img/Uhrzeigersinn.png')
+    leftCircleArrow = QIcon('img/Gegenuhrzeigersinn.png')
 
     w = QWidget()
     w.resize(winW, winH)
@@ -32,11 +53,14 @@ if __name__ == '__main__':
     btnStart.resize(btnStart.sizeHint())
     controlButtonsLayout.addWidget(btnStart)
 
-    btnStop = QPushButton('Stop')
+    btnStop = QPushButton('Stop moving')
     controlButtonsLayout.addWidget(btnStop)
 
     btnNextItr = QPushButton('Next iteration')
     controlButtonsLayout.addWidget(btnNextItr)
+
+    btnNewTest = QPushButton('New test')
+    controlButtonsLayout.addWidget(btnNewTest)
 
     drawLayout.addLayout(controlButtonsLayout)
 
@@ -44,8 +68,14 @@ if __name__ == '__main__':
 
     verticalLayout = QVBoxLayout()
 
-    btnChangeRDir = QPushButton('Rotate')
-    verticalLayout.addWidget(btnChangeRDir)
+    btnChangeRDir = QPushButton()
+    btnChangeRDir.setIcon(rightCircleArrow)
+    btnChangeRDir.setFixedSize(90, 90)
+    btnChangeRDir.setIconSize(QSize(80, 80))
+    btnChangeRDir.clicked.connect(swapCircleArrow)
+    btnChangeRDir.clicked.connect(wd.swapRotateDir)
+    verticalLayout.addWidget(btnChangeRDir, 1, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
+
 
     wtl = WidgetTargetList(w)
     wtl.c.sendTargets.connect(wd.receiveNewTargets)
@@ -69,6 +99,7 @@ if __name__ == '__main__':
 
     mc.c.sendTrajPoint.connect(wd.addTrajectoryPoint)
     mc.c.finalPosition.connect(wc.receiveFinalPoint)
+    mc.c.changeIter.connect(wd.newTestIteration)
 
     btnNextItr.clicked.connect(wd.reset)
 

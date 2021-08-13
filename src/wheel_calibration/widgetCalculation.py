@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit
+from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QGridLayout
 
 import math
 
@@ -21,12 +21,19 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         globalLayout = QVBoxLayout()
 
-        textFieldsLayout = QHBoxLayout()
+        textFieldsLayout = QGridLayout()
+
+        label = QLabel("Odometry\ndata:")
+        textFieldsLayout.addWidget(label, 0, 0)
+
+        label = QLabel("Real\ndata:")
+        textFieldsLayout.addWidget(label, 0, 1)
+
         self.te1 = QTextEdit()
-        textFieldsLayout.addWidget(self.te1)
+        textFieldsLayout.addWidget(self.te1, 1, 0)
 
         self.te2 = QTextEdit()
-        textFieldsLayout.addWidget(self.te2)
+        textFieldsLayout.addWidget(self.te2, 1, 1)
 
         globalLayout.addLayout(textFieldsLayout, 5)
 

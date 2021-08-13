@@ -7,8 +7,6 @@ class Communicate(QObject):
     sendData = pyqtSignal(int, float)
 
 class WidgetTargetList(QtWidgets.QLabel):
-    type = 0
-
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.c = Communicate()
@@ -24,9 +22,9 @@ class WidgetTargetList(QtWidgets.QLabel):
         #
         # pointLayout.addWidget(self.btnSave)
 
-        self.le = QLabel("Parametr:")
-        self.le.setAlignment(QtCore.Qt.AlignBottom)
-        pointLayout.addWidget(self.le, 1)
+        self.labelParam1 = QLabel("Line length:")
+        self.labelParam1.setAlignment(QtCore.Qt.AlignBottom)
+        pointLayout.addWidget(self.labelParam1, 1)
 
         self.le = QLineEdit("1")
         pointLayout.addWidget(self.le, 1)
@@ -47,19 +45,20 @@ class WidgetTargetList(QtWidgets.QLabel):
         radiobutton.toggled.connect(self.onClicked)
         pointLayout.addWidget(radiobutton, 1)
 
-        self.btnSave = QPushButton('Save')
-        self.btnSave.clicked.connect(self.sendTestData)
-        pointLayout.addWidget(self.btnSave, 1)
-
         self.setLayout(pointLayout)
 
     def onClicked(self):
         radioButton = self.sender()
         if radioButton.isChecked():
-            self.type = radioButton.typeTest
+            if radioButton.typeTest == 0:
+                self.labelParam1.setText("Length:")
+            if radioButton.typeTest == 1:
+                self.labelParam1.setText("Side length:")
+            if radioButton.typeTest == 2:
+                self.labelParam1.setText("Radius:")
 
-    def sendTestData(self):
-        self.c.sendData.emit(self.type, float(self.le.text()))
+            self.c.sendData.emit(radioButton.typeTest, float(self.le.text()))
+            self.update()
 
     def sendTargets(self):
         tragetList = []

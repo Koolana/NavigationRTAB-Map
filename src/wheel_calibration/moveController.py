@@ -17,6 +17,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 class Communicate(QObject):
     sendTrajPoint = pyqtSignal(list)
     finalPosition = pyqtSignal(list)
+    changeIter = pyqtSignal(int)
 
 class MoveController(QtCore.QObject):
     listTargets = []
@@ -149,6 +150,7 @@ class MoveController(QtCore.QObject):
             if abs(th) > 2 * math.pi * (1 + self.numIter):
                 self.numIter += 1
                 self.c.finalPosition.emit([x, y])
+                self.c.changeIter.emit(self.numIter)
 
         #
         #
