@@ -1,6 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QGridLayout
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QGridLayout, QListWidget, QListWidgetItem
+
+from widgetItemData import ItemData
 
 import math
 
@@ -10,6 +13,8 @@ class Communicate(QObject):
 class WidgetCalculation(QtWidgets.QLabel):
     finalPointsList = []
     experimentPointsList = []
+
+    numIter = 0
 
     type = 0
     a = 0
@@ -23,26 +28,25 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         textFieldsLayout = QGridLayout()
 
-        label = QLabel("Odometry\ndata:")
+        label = QLabel("Odometry\ndata")
+        label.setAlignment(QtCore.Qt.AlignCenter)
         textFieldsLayout.addWidget(label, 0, 0)
 
-        label = QLabel("Real\ndata:")
+        label = QLabel("Real\ndata")
+        label.setAlignment(QtCore.Qt.AlignCenter)
         textFieldsLayout.addWidget(label, 0, 1)
 
-        self.te1 = QTextEdit()
-        textFieldsLayout.addWidget(self.te1, 1, 0)
-
-        self.te2 = QTextEdit()
-        textFieldsLayout.addWidget(self.te2, 1, 1)
+        self.wDataList = QListWidget()
+        textFieldsLayout.addWidget(self.wDataList, 1, 0, 1, 2)
 
         globalLayout.addLayout(textFieldsLayout, 5)
 
-        self.btnSave = QPushButton('Calculate!')
-        self.btnSave.setToolTip('This is a <b>QPushButton</b> widget')
-        self.btnSave.resize(self.btnSave.sizeHint())
-        self.btnSave.clicked.connect(self.calc)
+        self.btnCalc = QPushButton('Calculate!')
+        self.btnCalc.setToolTip('This is a <b>QPushButton</b> widget')
+        self.btnCalc.resize(self.btnCalc.sizeHint())
+        self.btnCalc.clicked.connect(self.calc)
 
-        globalLayout.addWidget(self.btnSave, 1)
+        globalLayout.addWidget(self.btnCalc, 1)
 
         self.btnClear = QPushButton('Clear')
         self.btnClear.clicked.connect(self.clear)
@@ -54,26 +58,14 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         self.setLayout(globalLayout)
 
-    def clear(self):
-        self.te1.setText("")
-        self.te2.setText("")
-
-        self.update()
-
     def calc(self):
         self.finalPointsList = []
-        for str in self.te1.toPlainText().split("\n"):
-            data = str.split(" ")
-            if len(data) == 2:
-                self.finalPointsList.append([float(data[0]), float(data[1])])
-
         self.experimentPointsList = []
-        for str in self.te2.toPlainText().split("\n"):
-            data = str.split(" ")
-            if len(data) == 2:
-                self.experimentPointsList.append([float(data[0]), float(data[1])])
 
-        print("Calc:", self.experimentPointsList, self.finalPointsList)
+        for item in self.getAllListItems(self.wDataList):
+            dataFromItem = self.wDataList.itemWidget(item).getData()
+            self.finalPointsList.append(dataFromItem[0])
+            self.experimentPointsList.append(dataFromItem[1])
 
         if self.type == 0:
             delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
@@ -94,7 +86,6 @@ class WidgetCalculation(QtWidgets.QLabel):
 
             self.finalKoefsLabel.setText("Cl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
-            self.update()
         else:
             delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
             sum_delta_x_right = sum([i[0] for i in delta[:5]])
@@ -121,13 +112,36 @@ class WidgetCalculation(QtWidgets.QLabel):
             self.finalKoefsLabel.setText("b_new = " + "%.4f" % (b_new) + "\n" \
                                          "Cl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
-            self.update()
+        self.update()
+
+    def clear(self):
+        self.wDataList.clear()
+
+        self.numIter = 0
+
+        self.update()
 
     def changeTestType(self, type, a):
         self.type = type
         self.a = a
 
+    def addDataItemToList(self, item):
+        lwi = QListWidgetItem(self.wDataList)
+        lwi.setFlags(QtCore.Qt.NoItemFlags)
+        lwi.setSizeHint(item.sizeHint())
+
+        self.wDataList.addItem(lwi)
+        self.wDataList.setItemWidget(lwi, item)
+        print("New odom point added")
+
     def receiveFinalPoint(self, point):
-        print("WWWWWWWWWWWWW", point)
-        self.te1.append("%.3f" % (point[0]) + " " + "%.3f" % (point[1]))
+        self.numIter += 1
+
+        itemData = ItemData(point, self.numIter)
+        self.addDataItemToList(itemData)
+
         self.update()
+
+    def getAllListItems(self, widgetList):
+        for i in range(widgetList.count()):
+            yield widgetList.item(i)

@@ -90,7 +90,7 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
 
             if abs(vx) < 0.01 and self.finish:
-                self.c.finalPosition.emit([x, y])
+                self.c.finalPosition.emit([x, y, th])
                 self.finish = False
 
         if self.testType == 1:
@@ -143,13 +143,13 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
 
             if abs(vx) < 0.01 and self.finish:
-                self.c.finalPosition.emit([x, y])
+                self.c.finalPosition.emit([x, y, th])
                 self.finish = False
 
         if self.testType == 2:
             if abs(th) > 2 * math.pi * (1 + self.numIter):
                 self.numIter += 1
-                self.c.finalPosition.emit([x, y])
+                self.c.finalPosition.emit([x, y, th])
                 self.c.changeIter.emit(self.numIter)
 
         #

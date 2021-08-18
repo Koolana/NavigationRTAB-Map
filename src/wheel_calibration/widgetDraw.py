@@ -66,8 +66,10 @@ class WidgetDraw(QtWidgets.QLabel):
                 pen.setWidth(1)
                 qp.setPen(pen)
 
-            qp.drawText(10, self.size().height() / 10 * vl - 2, str((self.numVerticalLine / 2 - vl) * self.scaleDiv) + " m")
-            qp.drawLine(self.size().width() / 10 * vl, 0, self.size().width() / 10 * vl, self.size().height())
+            qp.rotate(-90)
+            qp.drawText(-self.size().height() + 10, self.size().width() / self.numVerticalLine * vl - 2, str(-(self.numVerticalLine / 2 - vl) * self.scaleDiv) + " m")
+            qp.rotate(90)
+            qp.drawLine(self.size().width() / self.numVerticalLine * vl, 0, self.size().width() / self.numVerticalLine * vl, self.size().height())
 
         for hl in range(1, self.numHorizontalLine):
             if hl == int(self.numHorizontalLine / 2):
@@ -77,10 +79,8 @@ class WidgetDraw(QtWidgets.QLabel):
                 pen.setWidth(1)
                 qp.setPen(pen)
 
-            qp.rotate(-90)
-            qp.drawText(-self.size().height() + 10, self.size().width() / 10 * hl - 2, str(-(self.numVerticalLine / 2 - hl) * self.scaleDiv) + " m")
-            qp.rotate(90)
-            qp.drawLine(0, self.size().height() / 10 * hl, self.size().width(), self.size().height() / 10 * hl)
+            qp.drawText(10, self.size().height() / self.numHorizontalLine * hl - 2, str((self.numHorizontalLine / 2 - hl) * self.scaleDiv) + " m")
+            qp.drawLine(0, self.size().height() / self.numHorizontalLine * hl, self.size().width(), self.size().height() / self.numHorizontalLine * hl)
 
         qp.restore()
 
@@ -171,6 +171,17 @@ class WidgetDraw(QtWidgets.QLabel):
                                        random.randint(0, 255), 255)
 
     def resizeEvent(self, event):
+        if self.size().width() > self.size().height():
+            self.numHorizontalLine = 10
+
+            self.numVerticalLine = int(10 * self.size().width() / self.size().height())
+            self.numVerticalLine += 0 if self.numVerticalLine % 2 == 0 else 1
+        else:
+            self.numHorizontalLine = int(10 * self.size().height() / self.size().width())
+            self.numHorizontalLine += 0 if self.numHorizontalLine % 2 == 0 else 1
+
+            self.numVerticalLine = 10
+
         self.drawRobotWidth = self.robotLenX / self.scaleDiv * self.size().width() / self.numVerticalLine
         self.drawRobotHeight = self.robotLenY / self.scaleDiv * self.size().height() / self.numHorizontalLine
 

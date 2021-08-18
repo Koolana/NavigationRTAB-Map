@@ -74,6 +74,7 @@ if __name__ == '__main__':
     btnChangeRDir.setIconSize(QSize(80, 80))
     btnChangeRDir.clicked.connect(swapCircleArrow)
     btnChangeRDir.clicked.connect(wd.swapRotateDir)
+    verticalLayout.addStretch(1)
     verticalLayout.addWidget(btnChangeRDir, 1, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
 
 
