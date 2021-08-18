@@ -71,7 +71,7 @@ class MoveController(QtCore.QObject):
         if len(data) != 6:
             return
 
-        print("Odom data:", data)
+        # print("Odom data:", data)
 
         x = float(data[3])
         y = float(data[4])
@@ -81,7 +81,7 @@ class MoveController(QtCore.QObject):
         vy = 0
         vth = float(data[1])
 
-        self.c.sendTrajPoint.emit([x, y])
+        self.c.sendTrajPoint.emit([x, y, th])
 
         if self.testType == 0:
             if abs(abs(x) - self.a) < self.err and abs(vx) > 0.01:

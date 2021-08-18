@@ -64,19 +64,37 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         for item in self.getAllListItems(self.wDataList):
             dataFromItem = self.wDataList.itemWidget(item).getData()
-            self.finalPointsList.append(dataFromItem[0])
-            self.experimentPointsList.append(dataFromItem[1])
+            if dataFromItem[0] is not None:
+                self.finalPointsList.append(dataFromItem[0])
+
+            if dataFromItem[1] is not None:
+                self.experimentPointsList.append(dataFromItem[1])
+
+        if len(self.finalPointsList) == 0:
+            self.finalKoefsLabel.setText("Empty odometry data!")
+            return
+
+        if len(self.experimentPointsList) == 0:
+            self.finalKoefsLabel.setText("Empty experimental data!")
+            return
+
+        if len(self.finalPointsList) != len(self.experimentPointsList):
+            self.finalKoefsLabel.setText("Data size\ndoes not match!")
+            return
 
         if self.type == 0:
             delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
             sum_delta_x = sum([i[0] for i in delta])
             sum_delta_y = sum([i[1] for i in delta])
-            print(sum_delta_x, sum_delta_y)
+            # print(sum_delta_x, sum_delta_y)
+            if sum_delta_x == 0:
+                self.finalKoefsLabel.setText("Division by zero!")
+                return
 
             half_betta = math.atan(sum_delta_y / sum_delta_x)
 
             r = 1000 / math.sin(half_betta)
-            print(r)
+            # print(r)
 
             Ed = (r+12.3/2)/(r-12.3/2)
 
@@ -84,9 +102,9 @@ class WidgetCalculation(QtWidgets.QLabel):
 
             Cr = 0 if ((1/Ed)+1) == 0 else (2/((1/Ed)+1))
 
-            self.finalKoefsLabel.setText("Cl = " + "%.4f" % (Cl) + "\n" + \
+            self.finalKoefsLabel.setText("Results:\nCl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
-        else:
+        if self.type == 1:
             delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
             sum_delta_x_right = sum([i[0] for i in delta[:5]])
             sum_delta_y_right = sum([i[1] for i in delta[:5]])
@@ -109,9 +127,13 @@ class WidgetCalculation(QtWidgets.QLabel):
             Cl = 0 if (Ed + 1) == 0 else (2 / (Ed + 1))
             Cr = 0 if ((1 / Ed) + 1) == 0 else (2/((1/Ed)+1))
 
-            self.finalKoefsLabel.setText("b_new = " + "%.4f" % (b_new) + "\n" \
+            self.finalKoefsLabel.setText("Results:\nb_new = " + "%.4f" % (b_new) + "\n" \
                                          "Cl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
+
+        if self.type == 2:
+            self.finalKoefsLabel.setText("Calculation algorithm\nnot found!")
+
         self.update()
 
     def clear(self):

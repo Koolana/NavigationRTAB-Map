@@ -47,7 +47,18 @@ class ItemData(QtWidgets.QWidget):
         self.setLayout(globalLayout)
 
     def getData(self):
-        return [self.odomPoint, [float(self.lExperDataX.text()), float(self.lExperDataY.text())]]
+        if not self.isfloat(self.lExperDataX.text()) or not self.isfloat(self.lExperDataY.text()):
+            return [self.odomPoint, None]
+        else:
+            return [self.odomPoint, [float(self.lExperDataX.text()), float(self.lExperDataY.text())]]
+
+    def isfloat(self, x):
+        try:
+            a = float(x)
+        except (TypeError, ValueError):
+            return False
+        else:
+            return True
 
     def paintEvent(self, event):
         qp = QtGui.QPainter(self)
