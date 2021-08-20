@@ -164,6 +164,9 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         self.update()
 
+    def receiveData(self, data):
+        self.b = data[0]
+
     def getAllListItems(self, widgetList):
         for i in range(widgetList.count()):
             yield widgetList.item(i)

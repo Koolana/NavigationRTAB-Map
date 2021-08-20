@@ -40,8 +40,8 @@ if __name__ == '__main__':
     btnNextItr = QPushButton('Next iteration')
     controlButtonsLayout.addWidget(btnNextItr)
 
-    btnNewTest = QPushButton('New test')
-    controlButtonsLayout.addWidget(btnNewTest)
+    # btnNewTest = QPushButton('New test')
+    # controlButtonsLayout.addWidget(btnNewTest)
 
     drawLayout.addLayout(controlButtonsLayout)
 
@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
     wc = WidgetCalculation(w)
     wtl.c.sendData.connect(wc.changeTestType)
+    wr.c.sendData.connect(wc.receiveData)
     verticalLayout.addWidget(wc, 8)
 
     globalLayout.addLayout(verticalLayout, 1)
@@ -70,6 +71,7 @@ if __name__ == '__main__':
     btnStop.clicked.connect(mc.stopMoving)
     btnNextItr.clicked.connect(mc.resetMoving)
     wr.c.changeRotateDir.connect(mc.changeRotateDir)
+    wr.c.sendData.connect(mc.receiveSpeedData)
 
     wtl.c.sendData.connect(mc.changeData)
 

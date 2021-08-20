@@ -7,6 +7,8 @@ class Communicate(QObject):
     sendData = pyqtSignal(int, float)
 
 class WidgetTargetList(QtWidgets.QLabel):
+    currTypeTest = 0
+
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.c = Communicate()
@@ -27,6 +29,7 @@ class WidgetTargetList(QtWidgets.QLabel):
         pointLayout.addWidget(self.labelParam1, 1)
 
         self.le = QLineEdit("1")
+        self.le.editingFinished.connect(self.testChoosed)
         pointLayout.addWidget(self.le, 1)
 
         radiobutton = QRadioButton("Line")
@@ -47,17 +50,23 @@ class WidgetTargetList(QtWidgets.QLabel):
 
         self.setLayout(pointLayout)
 
+    def testChoosed(self):
+        self.c.sendData.emit(self.currTypeTest, float(self.le.text()))
+
     def onClicked(self):
         radioButton = self.sender()
         if radioButton.isChecked():
             if radioButton.typeTest == 0:
+                self.currTypeTest = 0
                 self.labelParam1.setText("Length:")
             if radioButton.typeTest == 1:
+                self.currTypeTest = 1
                 self.labelParam1.setText("Side length:")
             if radioButton.typeTest == 2:
+                self.currTypeTest = 2
                 self.labelParam1.setText("Radius:")
 
-            self.c.sendData.emit(radioButton.typeTest, float(self.le.text()))
+            self.testChoosed()
             self.update()
 
     def sendTargets(self):

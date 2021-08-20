@@ -10,6 +10,7 @@ import math
 
 class Communicate(QObject):
     changeRotateDir = pyqtSignal()
+    sendData = pyqtSignal(list)
 
 class WidgetRobot(QtWidgets.QWidget):
     isRightCircleArrow = True
@@ -39,22 +40,35 @@ class WidgetRobot(QtWidgets.QWidget):
         lWidth = QLabel("Width:")
         globalLayout.addWidget(lWidth, 5, 0, 1, 1)
 
-        self.leWidth = QLineEdit()
+        self.leWidth = QLineEdit(str(0.275))
         globalLayout.addWidget(self.leWidth, 6, 0, 1, 4)
 
         lLinSpeed = QLabel("Linear speed:")
         globalLayout.addWidget(lLinSpeed, 7, 0, 1, 1)
 
-        self.leLinSpeed = QLineEdit()
+        self.leLinSpeed = QLineEdit(str(0.1))
         globalLayout.addWidget(self.leLinSpeed, 8, 0, 1, 4)
 
         lAngSpeed = QLabel("Angular speed:")
         globalLayout.addWidget(lAngSpeed, 9, 0, 1, 1)
 
-        self.leAngSpeed = QLineEdit()
+        self.leAngSpeed = QLineEdit(str(0.3))
         globalLayout.addWidget(self.leAngSpeed, 10, 0, 1, 4)
 
+        self.btnSave = QPushButton("Save")
+        self.btnSave.clicked.connect(self.sendData)
+        globalLayout.addWidget(self.btnSave, 11, 0, 1, 4)
+
         self.setLayout(globalLayout)
+
+        self.c.sendData.emit([float(self.leWidth.text()),
+                              float(self.leLinSpeed.text()),
+                              float(self.leAngSpeed.text())])
+
+    def sendData(self):
+        self.c.sendData.emit([float(self.leWidth.text()),
+                              float(self.leLinSpeed.text()),
+                              float(self.leAngSpeed.text())])
 
     def swapCircleArrow(self):
         if self.isRightCircleArrow:

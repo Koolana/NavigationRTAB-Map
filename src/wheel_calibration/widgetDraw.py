@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPen, QColor
+from PyQt5.QtGui import QPen, QColor, QFont
 from PyQt5.QtCore import QPoint, Qt
 
 import time
@@ -15,6 +15,7 @@ class WidgetDraw(QtWidgets.QLabel):
     robotLenY = 0.25
 
     robotPos = [0, 0, 0]
+    robotVel = [0, 0]
     robotDrawShift = QPoint(0, 0)
 
     testType = 0
@@ -51,6 +52,7 @@ class WidgetDraw(QtWidgets.QLabel):
         self.drawTargets(qp)
         self.drawTarget(qp)
         self.drawTrajectory(qp)
+        self.drawCurrentRobotPos(qp)
 
     def drawScale(self, qp):
         qp.save()
@@ -118,7 +120,7 @@ class WidgetDraw(QtWidgets.QLabel):
     def drawTarget(self, qp):
         qp.save()
 
-        pen = QPen(QColor(20, 200, 20, 255), 2, Qt.DotLine)
+        pen = QPen(QColor(0, 150, 0, 255), 2, Qt.DotLine)
         qp.setPen(pen)
 
         if self.testType == 0:
@@ -162,6 +164,36 @@ class WidgetDraw(QtWidgets.QLabel):
             -point[0][1] / self.scaleDiv * self.size().height() / self.numHorizontalLine + self.size().height() / 2)
 
             prevPoint = point
+        qp.restore()
+
+    def drawCurrentRobotPos(self, qp):
+        qp.save()
+
+        qp.setBrush(QColor(255, 255, 255, 255))
+        qp.setPen(QPen(QColor(0, 0, 0, 0)))
+
+        shiftFrame = 150
+
+        qp.drawRect(self.size().width() - shiftFrame, 0, shiftFrame, 5*20 + 8)
+
+        qp.setPen(QPen(QColor(0, 0, 0, 255)))
+        qp.setFont(QFont("Helvetica [Cronyx]", 12))
+
+        qp.drawText(self.size().width() - shiftFrame + 10, 1 * 20, "x:")
+        qp.drawText(self.size().width() - shiftFrame + 40, 1 * 20, "%5.2f" % (self.robotPos[0]) + " m")
+
+        qp.drawText(self.size().width() - shiftFrame + 10, 2 * 20, "y:")
+        qp.drawText(self.size().width() - shiftFrame + 40, 2 * 20, "%5.2f" % (self.robotPos[1]) + " m")
+
+        qp.drawText(self.size().width() - shiftFrame + 10, 3 * 20, "th:")
+        qp.drawText(self.size().width() - shiftFrame + 40, 3 * 20, "%5.2f" % (self.robotPos[2]) + " rad")
+
+        qp.drawText(self.size().width() - shiftFrame + 10, 4 * 20, "vx:")
+        qp.drawText(self.size().width() - shiftFrame + 40, 4 * 20, "%5.2f" % (self.robotVel[0]) + " m/sec")
+
+        qp.drawText(self.size().width() - shiftFrame + 10, 5 * 20, "vy:")
+        qp.drawText(self.size().width() - shiftFrame + 40, 5 * 20, "%5.2f" % (self.robotVel[1]) + " rad/sec")
+
         qp.restore()
 
     def swapRotateDir(self):
@@ -217,8 +249,11 @@ class WidgetDraw(QtWidgets.QLabel):
         self.update()
 
     def addTrajectoryPoint(self, point):
+        self.robotPos = [point[0], point[1], point[2]]
+        self.robotVel = [point[3], point[4]]
+
         if abs(self.trajectoryPoints[-1][0][0] - point[0]) > 0.03 or abs(self.trajectoryPoints[-1][0][1] - point[1]) > 0.03 or abs(self.trajectoryPoints[-1][0][2] - point[2]) > 0.03:
-            self.robotPos = [point[0], point[1], point[2]]
             print(self.robotPos)
-            self.trajectoryPoints.append([point, self.currentIterColor])
-            self.update()
+            self.trajectoryPoints.append([point[:3], self.currentIterColor])
+            
+        self.update()

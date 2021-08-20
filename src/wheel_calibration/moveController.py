@@ -81,16 +81,19 @@ class MoveController(QtCore.QObject):
         vy = 0
         vth = float(data[1])
 
-        self.c.sendTrajPoint.emit([x, y, th])
+        self.c.sendTrajPoint.emit([x, y, th, vx, vth])
 
         if self.testType == 0:
-            if abs(abs(x) - self.a) < self.err and abs(vx) > 0.01:
+            if self.state == 0 and abs(abs(x) - self.a) < self.err:
                 self.finish = True
+                self.state = 1
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
 
             if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
+                self.numIter += 1
+                self.c.changeIter.emit(self.numIter)
                 self.finish = False
 
         if self.testType == 1:
@@ -100,7 +103,7 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 1 and abs(abs(th) - math.pi / 2) < 0.05:
+            if self.state == 1 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 2
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
@@ -112,7 +115,7 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 3 and abs(abs(th) - math.pi) < 0.05:
+            if self.state == 3 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 4
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
@@ -124,7 +127,7 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 5 and abs(abs(th) - 3 * math.pi / 2) < 0.05:
+            if self.state == 5 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 6
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
@@ -136,7 +139,7 @@ class MoveController(QtCore.QObject):
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 7 and abs(abs(th) - 2 * math.pi) < 0.05:
+            if self.state == 7 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 8
                 self.finish = True
                 self.arduino.write(bytes('p', 'utf-8'))
@@ -144,13 +147,22 @@ class MoveController(QtCore.QObject):
 
             if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
+                self.numIter += 1
+                self.c.changeIter.emit(self.numIter)
                 self.finish = False
 
         if self.testType == 2:
-            if abs(th) > 2 * math.pi * (1 + self.numIter):
-                self.numIter += 1
+            if self.state == 0 and abs(th) > 2 * math.pi * (1 + self.numIter):
+                self.finish = True
+                self.state = 1
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+
+            if abs(vx) < 0.01 and abs(vth) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
+                self.numIter += 1
                 self.c.changeIter.emit(self.numIter)
+                self.finish = False
 
         #
         #
@@ -240,13 +252,10 @@ class MoveController(QtCore.QObject):
     def resetMoving(self):
         self.stopMoving()
         self.arduino.write(bytes('n', 'utf-8'))
-        # self.currTarget = 0
-        # self.targetRotate = 0
 
         self.finish = False
-        # self.isRotate = False
-
         self.state = 0
+        self.numIter = 0
 
     def changeRotateDir(self):
         self.isClockwise = not self.isClockwise
@@ -255,6 +264,10 @@ class MoveController(QtCore.QObject):
         self.testType = type
         self.a = a
         print("Changed:", type, a)
+
+    def receiveSpeedData(self, data):
+        self.maxSpeed = data[1]
+        self.maxRotate = data[2]
 
     def receiveNewTargets(self, targets):
         self.listTargets = targets
