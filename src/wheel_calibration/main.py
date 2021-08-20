@@ -3,37 +3,18 @@ from widgetDraw import WidgetDraw
 from widgetTargetList import WidgetTargetList
 from moveController import MoveController
 from widgetCalculation import WidgetCalculation
+from widgetRobot import WidgetRobot
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
                             QHBoxLayout, QVBoxLayout, QLabel, QTextEdit
 
-isRightCircleArrow = True
-
-rightCircleArrow = None
-leftCircleArrow = None
-
-def swapCircleArrow():
-    global isRightCircleArrow
-    global leftCircleArrow
-    global rightCircleArrow
-
-    if isRightCircleArrow:
-        isRightCircleArrow = False
-        btnChangeRDir.setIcon(leftCircleArrow)
-    else:
-        isRightCircleArrow = True
-        btnChangeRDir.setIcon(rightCircleArrow)
-
 if __name__ == '__main__':
     winH = 1080
     winW = 1400
 
     app = QApplication(sys.argv)
-
-    rightCircleArrow = QIcon('img/Uhrzeigersinn.png')
-    leftCircleArrow = QIcon('img/Gegenuhrzeigersinn.png')
 
     w = QWidget()
     w.resize(winW, winH)
@@ -68,15 +49,9 @@ if __name__ == '__main__':
 
     verticalLayout = QVBoxLayout()
 
-    btnChangeRDir = QPushButton()
-    btnChangeRDir.setIcon(rightCircleArrow)
-    btnChangeRDir.setFixedSize(90, 90)
-    btnChangeRDir.setIconSize(QSize(80, 80))
-    btnChangeRDir.clicked.connect(swapCircleArrow)
-    btnChangeRDir.clicked.connect(wd.swapRotateDir)
-    verticalLayout.addStretch(1)
-    verticalLayout.addWidget(btnChangeRDir, 1, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
-
+    wr = WidgetRobot()
+    wr.c.changeRotateDir.connect(wd.swapRotateDir)
+    verticalLayout.addWidget(wr)
 
     wtl = WidgetTargetList(w)
     wtl.c.sendTargets.connect(wd.receiveNewTargets)
@@ -94,7 +69,7 @@ if __name__ == '__main__':
     btnStart.clicked.connect(mc.startMoving)
     btnStop.clicked.connect(mc.stopMoving)
     btnNextItr.clicked.connect(mc.resetMoving)
-    btnChangeRDir.clicked.connect(mc.changeRotateDir)
+    wr.c.changeRotateDir.connect(mc.changeRotateDir)
 
     wtl.c.sendData.connect(mc.changeData)
 
