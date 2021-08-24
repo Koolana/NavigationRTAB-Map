@@ -53,6 +53,10 @@ class ItemData(QtWidgets.QWidget):
 
         self.setLayout(globalLayout)
 
+    def setExperimentPoint(self, point):
+        self.lExperDataX.setText("%.3f" % (point[0]))
+        self.lExperDataY.setText("%.3f" % (point[1]))
+
     def getData(self):
         if not self.isfloat(self.lExperDataX.text()) or not self.isfloat(self.lExperDataY.text()):
             return [self.odomPoint, None, self.isClockwise]

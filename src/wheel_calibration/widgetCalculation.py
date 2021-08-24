@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from widgetItemData import ItemData
-import os
+from os.path import expanduser
 
 import math
 
@@ -25,9 +25,12 @@ class WidgetCalculation(QtWidgets.QGroupBox):
 
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.parent = parent
 
         self.c = Communicate()
+
+        self.dialog = QFileDialog(self)
+        self.dialog.setFileMode(QFileDialog.AnyFile)
+        self.dialog.setViewMode(QFileDialog.Detail)
 
         self.setTitle("Experiment information")
 
@@ -55,6 +58,7 @@ class WidgetCalculation(QtWidgets.QGroupBox):
         impExpLayout.addWidget(self.btnImport, 1)
 
         self.btnExport = QPushButton('Export')
+        self.btnExport.clicked.connect(self.exportToFile)
         impExpLayout.addWidget(self.btnExport, 1)
 
         globalLayout.addLayout(impExpLayout, 1)
@@ -75,11 +79,53 @@ class WidgetCalculation(QtWidgets.QGroupBox):
         self.setLayout(globalLayout)
 
     def importFile(self):
-        # filename, filetype = QFileDialog.getOpenFileName(self, "Выбрать файл", "./")
-        # print(filename, filetype)
-        return
+        filename, filetype = self.dialog.getOpenFileName(self, "Choose a data-file",
+                                                        expanduser("~"), "Data files (*.csv)",
+                                                        options=QFileDialog.DontUseNativeDialog)
 
-    def calc(self):
+        if filename == '':
+            return
+            
+        self.clear()
+
+        file = open(filename, 'r')
+
+        for line in file.readlines():
+            data = line.split(';')
+            self.numIter += 1
+
+            itemData = ItemData([float(data[1]), float(data[2])], 'True' == data[0], self.numIter)
+            itemData.setExperimentPoint([float(data[3]), float(data[4])])
+            self.addDataItemToList(itemData)
+
+        file.close()
+        self.update()
+
+    def exportToFile(self):
+        self.updateDatabase()
+
+        if len(self.finalPointsList) == 0:
+            return
+
+        if len(self.experimentPointsList) == 0:
+            return
+
+        if len(self.finalPointsList) == 0:
+            return
+
+        dirname = self.dialog.getExistingDirectory(self, 'Select a folder:',
+                                                   expanduser("~"), options=QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
+
+        file = open(dirname + '/exported.csv', 'w')
+
+        for isClockwise, experimentPoint, odomPoint in zip(self.isClockwisePointsList, self.experimentPointsList, self.finalPointsList):
+            file.write(str(isClockwise) + ";" +
+                       str(odomPoint[0]) + ";" + str(odomPoint[1]) + ";" +
+                       str(experimentPoint[0]) + ";" + str(experimentPoint[1]) + ";\n")
+
+        file.close()
+
+    def updateDatabase(self):
         self.finalPointsList = []
         self.experimentPointsList = []
         self.isClockwisePointsList = []
@@ -94,6 +140,9 @@ class WidgetCalculation(QtWidgets.QGroupBox):
 
             if dataFromItem[2] is not None:
                 self.isClockwisePointsList.append(dataFromItem[2])
+
+    def calc(self):
+        self.updateDatabase()
 
         if len(self.finalPointsList) == 0:
             self.finalKoefsLabel.setText("Empty odometry data!")
