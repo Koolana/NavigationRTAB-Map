@@ -61,6 +61,7 @@ if __name__ == '__main__':
     wc = WidgetCalculation(w)
     wtl.c.sendData.connect(wc.changeTestType)
     wr.c.sendData.connect(wc.receiveData)
+    wr.c.changeRotateDir.connect(wc.changeRotateDir)
     verticalLayout.addWidget(wc, 8)
 
     globalLayout.addLayout(verticalLayout, 1)

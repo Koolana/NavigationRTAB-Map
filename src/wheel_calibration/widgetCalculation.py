@@ -13,8 +13,10 @@ class Communicate(QObject):
 class WidgetCalculation(QtWidgets.QLabel):
     finalPointsList = []
     experimentPointsList = []
+    isClockwisePointsList = []
 
     numIter = 0
+    isClockwise = True
 
     type = 0
     a = 0
@@ -61,6 +63,7 @@ class WidgetCalculation(QtWidgets.QLabel):
     def calc(self):
         self.finalPointsList = []
         self.experimentPointsList = []
+        self.isClockwisePointsList = []
 
         for item in self.getAllListItems(self.wDataList):
             dataFromItem = self.wDataList.itemWidget(item).getData()
@@ -69,6 +72,9 @@ class WidgetCalculation(QtWidgets.QLabel):
 
             if dataFromItem[1] is not None:
                 self.experimentPointsList.append(dataFromItem[1])
+
+            if dataFromItem[2] is not None:
+                self.isClockwisePointsList.append(dataFromItem[2])
 
         if len(self.finalPointsList) == 0:
             self.finalKoefsLabel.setText("Empty odometry data!")
@@ -100,18 +106,27 @@ class WidgetCalculation(QtWidgets.QLabel):
 
             Cl = 0 if (Ed+1) == 0 else (2 / (Ed+1))
 
-            Cr = 0 if ((1/Ed)+1) == 0 else (2/((1/Ed)+1))
+            Cr = 0 if ((1/Ed)+1) == 0 else (2 / ((1 / Ed) + 1))
 
             self.finalKoefsLabel.setText("Results:\nCl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
         if self.type == 1:
-            delta = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
-            sum_delta_x_right = sum([i[0] for i in delta[:5]])
-            sum_delta_y_right = sum([i[1] for i in delta[:5]])
+            deltas = [[exp[0] - odom[0], exp[1] - odom[1]] for exp, odom in zip(self.experimentPointsList, self.finalPointsList)]
 
-            sum_delta_x_left = sum([i[0] for i in delta[5:]])
-            sum_delta_y_left = sum([i[1] for i in delta[5:]])
-            print(sum_delta_x_right, sum_delta_y_right)
+            sum_delta_x_right = 0
+            sum_delta_y_right = 0
+            sum_delta_x_left = 0
+            sum_delta_y_left = 0
+
+            for delta, isClockwise in zip(deltas, self.isClockwisePointsList):
+                if isClockwise:
+                    sum_delta_x_right += delta[0]
+                    sum_delta_y_right += delta[1]
+                else:
+                    sum_delta_x_left += delta[0]
+                    sum_delta_y_left += delta[1]
+
+            print(self.isClockwisePointsList)
 
             betta = (sum_delta_x_right - sum_delta_x_left)/((-4)*self.a)
 
@@ -120,14 +135,15 @@ class WidgetCalculation(QtWidgets.QLabel):
             Ed = (R + self.b / 2) / (R - self.b / 2)
 
             alpha = (sum_delta_x_right + sum_delta_x_left) / ((-4) * self.a)
-            b_new = (1.5708 * self.b) / (1.5708 - alpha)
 
-            Eb = 1.5708 / (1.5708-alpha)
+            Eb = (math.pi / 2) / ((math.pi / 2)-alpha)
+
+            b_actual = Eb * self.b
 
             Cl = 0 if (Ed + 1) == 0 else (2 / (Ed + 1))
-            Cr = 0 if ((1 / Ed) + 1) == 0 else (2/((1/Ed)+1))
+            Cr = 0 if ((1 / Ed) + 1) == 0 else (2 / ((1 / Ed) + 1))
 
-            self.finalKoefsLabel.setText("Results:\nb_new = " + "%.4f" % (b_new) + "\n" \
+            self.finalKoefsLabel.setText("Results:\nb_actual = " + "%.4f" % (b_actual) + "\n" \
                                          "Cl = " + "%.4f" % (Cl) + "\n" + \
                                          "Cr = " + "%.4f" % (Cr))
 
@@ -147,6 +163,9 @@ class WidgetCalculation(QtWidgets.QLabel):
         self.type = type
         self.a = a
 
+    def changeRotateDir(self):
+        self.isClockwise = not self.isClockwise
+
     def addDataItemToList(self, item):
         lwi = QListWidgetItem(self.wDataList)
         lwi.setFlags(QtCore.Qt.NoItemFlags)
@@ -159,7 +178,7 @@ class WidgetCalculation(QtWidgets.QLabel):
     def receiveFinalPoint(self, point):
         self.numIter += 1
 
-        itemData = ItemData(point, self.numIter)
+        itemData = ItemData(point, self.isClockwise, self.numIter)
         self.addDataItemToList(itemData)
 
         self.update()

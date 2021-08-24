@@ -1,15 +1,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QGridLayout, QListWidget, QLineEdit
 
 
 class ItemData(QtWidgets.QWidget):
     odomPoint = []
 
-    def __init__(self, point, number=0, parent=None):
+    def __init__(self, point, isClockwise=True, number=0, parent=None):
         super().__init__(parent=parent)
 
         self.odomPoint = point
+        self.isClockwise = isClockwise
 
         globalLayout = QGridLayout()
         globalLayout.setSpacing(0)
@@ -17,6 +19,11 @@ class ItemData(QtWidgets.QWidget):
 
         labelNumber = QLabel(str(number))
         globalLayout.addWidget(labelNumber, 0, 0, 3, 0)
+
+        labelRotateDir = QLabel("CW" if isClockwise else "CCW")
+        labelRotateDir.setFont(QFont("Helvetica [Cronyx]", 5))
+        labelRotateDir.setAlignment(QtCore.Qt.AlignBottom)
+        globalLayout.addWidget(labelRotateDir, 2, 0, 1, 0)
 
         titleX = QLabel("x")
         titleX.setAlignment(QtCore.Qt.AlignCenter)
@@ -48,9 +55,9 @@ class ItemData(QtWidgets.QWidget):
 
     def getData(self):
         if not self.isfloat(self.lExperDataX.text()) or not self.isfloat(self.lExperDataY.text()):
-            return [self.odomPoint, None]
+            return [self.odomPoint, None, self.isClockwise]
         else:
-            return [self.odomPoint, [float(self.lExperDataX.text()), float(self.lExperDataY.text())]]
+            return [self.odomPoint, [float(self.lExperDataX.text()), float(self.lExperDataY.text())], self.isClockwise]
 
     def isfloat(self, x):
         try:

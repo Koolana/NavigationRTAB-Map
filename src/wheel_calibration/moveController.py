@@ -26,6 +26,9 @@ class MoveController(QtCore.QObject):
     maxSpeed = 0.1
     maxRotate = 0.3
 
+    prevSpeedLinear = 0
+    prevSpeedRotate = 0
+
     err = 0.05
 
     finish = False
@@ -84,9 +87,13 @@ class MoveController(QtCore.QObject):
         self.c.sendTrajPoint.emit([x, y, th, vx, vth])
 
         if self.testType == 0:
-            if self.state == 0 and abs(abs(x) - self.a) < self.err:
+            if self.state == 1:
+                self.state = 2
+                self.move_callback(self.maxSpeed, 0)
+
+            if self.state == 2 and abs(abs(x) - self.a) < self.err:
                 self.finish = True
-                self.state = 1
+                self.state = 0
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
 
@@ -97,50 +104,54 @@ class MoveController(QtCore.QObject):
                 self.finish = False
 
         if self.testType == 1:
-            if self.state == 0 and abs(abs(x) - self.a) < self.err:
-                self.state = 1
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
-                self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
-
-            if self.state == 1 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 1:
                 self.state = 2
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 2 and abs(abs(y) - self.a) < self.err:
+            if self.state == 2 and abs(abs(x) - self.a) < self.err:
                 self.state = 3
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 3 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 3 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 4
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 4 and abs(x) < self.err:
+            if self.state == 4 and abs(abs(y) - self.a) < self.err:
                 self.state = 5
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 5 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 5 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 6
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 6 and abs(y) < self.err:
+            if self.state == 6 and abs(x) < self.err:
                 self.state = 7
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 7 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 7 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 8
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(self.maxSpeed, 0)
+
+            if self.state == 8 and abs(y) < self.err:
+                self.state = 9
+                self.arduino.write(bytes('p', 'utf-8'))
+                time.sleep(1)
+                self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
+
+            if self.state == 9 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < 0.05:
+                self.state = 0
                 self.finish = True
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
@@ -152,9 +163,17 @@ class MoveController(QtCore.QObject):
                 self.finish = False
 
         if self.testType == 2:
-            if self.state == 0 and abs(th) > 2 * math.pi * (1 + self.numIter):
+            if self.state == 1:
+                self.state = 2
+
+                if self.isClockwise:
+                    self.move_callback(self.maxSpeed, -self.maxSpeed / self.a)
+                else:
+                    self.move_callback(self.maxSpeed, self.maxSpeed / self.a)
+
+            if self.state == 2 and abs(th) > 2 * math.pi * (1 + self.numIter):
                 self.finish = True
-                self.state = 1
+                self.state = 0
                 self.arduino.write(bytes('p', 'utf-8'))
                 time.sleep(1)
 
@@ -229,21 +248,28 @@ class MoveController(QtCore.QObject):
         move_msg = "v" + "{0:.2f}".format(speedLinear) + \
                        " " + "{0:.2f}".format(speedRotate)
 
+        self.prevSpeedLinear = speedLinear
+        self.prevSpeedRotate = speedRotate
+
         self.arduino.write(bytes(move_msg, 'utf-8'))
         print("Move msg:", move_msg)
         self.arduino.flush()
 
     def startMoving(self):
-        self.state = 0
-
-        if self.testType == 0 or self.testType == 1:
-            self.move_callback(self.maxSpeed, 0)
-
-        if self.testType == 2:
-            if self.isClockwise:
-                self.move_callback(self.maxSpeed, -self.maxSpeed / self.a)
-            else:
-                self.move_callback(self.maxSpeed, self.maxSpeed / self.a)
+        # self.state = 0
+        #
+        # if self.testType == 0 or self.testType == 1:
+        #     self.move_callback(self.maxSpeed, 0)
+        #
+        # if self.testType == 2:
+        #     if self.isClockwise:
+        #         self.move_callback(self.maxSpeed, -self.maxSpeed / self.a)
+        #     else:
+        #         self.move_callback(self.maxSpeed, self.maxSpeed / self.a)
+        if self.state == 0:
+            self.state = 1
+        else:
+            self.move_callback(self.prevSpeedLinear, self.prevSpeedRotate)
 
     def stopMoving(self):
         self.arduino.write(bytes('p', 'utf-8'))
