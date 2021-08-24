@@ -86,7 +86,10 @@ double Vl = 0;
 double Vr = 0;
 double SetV = 0;
 double SetW = 0;
-double maxSpeed = 0.6848; // максимальная линейная скорость при скважности 100%, в м/с
+double maxSpeed = 0.6848;  // максимальная линейная скорость при скважности 100%, в м/с
+
+double CR = 1;  // 1.0038  // корректирующие коеффициенты для радиусов колес
+double CL = 1;  // 0.9962
 
 double yaw = 0;
 double x = 0;
@@ -114,8 +117,8 @@ void Motor() {
   PIDMovement(SetSpeedR,SetSpeedL);  // передается линейная скорость колес, в м/сек
 }
 void SetSpeed(double LinearVelocity, double AngularVelocity) {
-  SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R*1.0038))*R*1.0038;   //M/S - линейная скорость колеса
-  SetSpeedL = (((2*LinearVelocity)-(AngularVelocity*L))/(2*R*0.9962))*R*0.9962;
+  SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R*CR))*R*CR;   //M/S - линейная скорость колеса
+  SetSpeedL = (((2*LinearVelocity)-(AngularVelocity*L))/(2*R*CL))*R*CL;
 }
 void CheckSettingsSpeed() {
   if (settingSpeed) {
@@ -192,16 +195,16 @@ void Timer_finish()  {
   wheelSpeedL = double(wheelImpL / dT); // число импульсов за сек
 
   // пройденный колесом путь, м
-  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R*1.0038);  // 663  // метры L = 2*PI*R*n/N
-  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R*0.9962);  //*
+  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R*CR);  // 663  // метры L = 2*PI*R*n/N
+  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R*CL);  //*
 
   // линейная скорость колеса
   wheelRightV = wheelRightS/ 1; // mетры за сек
   wheelLeftV  = wheelLeftS / 1;
 
   // угловая скорость колеса
-  omegaRight = wheelRightV/R*1.0038;   // rad за сек
-  omegaLeft  = wheelLeftV/R*0.9962;
+  omegaRight = wheelRightV/R*CR;   // rad за сек
+  omegaLeft  = wheelLeftV/R*CL;
 
   // фактическая линейная скорость центра робота
   V     = (R/2)*(omegaRight * (DirectionR ? -1 : 1) + omegaLeft * (DirectionL ? -1 : 1));//m/s
@@ -213,8 +216,8 @@ void Timer_finish()  {
   y += V*sin(yaw) * dT;
 
   // проверка
-  Vr = (((2*V)+(omega*L))/(2*R*1.0038))*R*1.0038; //M/S
-  Vl = (((2*V)-(omega*L))/(2*R*0.9962))*R*0.9962;
+  Vr = (((2*V)+(omega*L))/(2*R*CR))*R*CR; //M/S
+  Vl = (((2*V)-(omega*L))/(2*R*CL))*R*CL;
 
   wheelImpR = 0;
   wheelImpL = 0;
