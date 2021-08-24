@@ -12,7 +12,7 @@ class Communicate(QObject):
     changeRotateDir = pyqtSignal()
     sendData = pyqtSignal(list)
 
-class WidgetRobot(QtWidgets.QWidget):
+class WidgetRobot(QtWidgets.QGroupBox):
     isRightCircleArrow = True
 
     rightCircleArrow = None
@@ -25,10 +25,12 @@ class WidgetRobot(QtWidgets.QWidget):
         self.rightCircleArrow = QIcon('img/Uhrzeigersinn.png')
         self.leftCircleArrow = QIcon('img/Gegenuhrzeigersinn.png')
 
+        self.setTitle("Robot parameters")
+
         globalLayout = QGridLayout()
 
-        titleRobot = QLabel("Robot parameters")
-        globalLayout.addWidget(titleRobot, 0, 0, 1, 4)
+        # titleRobot = QLabel("Robot parameters")
+        # globalLayout.addWidget(titleRobot, 0, 0, 1, 4)
 
         self.btnChangeRDir = QPushButton()
         self.btnChangeRDir.setIcon(self.rightCircleArrow)

@@ -1,16 +1,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QGridLayout, QListWidget, QListWidgetItem
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from widgetItemData import ItemData
+import os
 
 import math
 
 class Communicate(QObject):
     receiveFinalPoint = pyqtSignal(list)
 
-class WidgetCalculation(QtWidgets.QLabel):
+class WidgetCalculation(QtWidgets.QGroupBox):
     finalPointsList = []
     experimentPointsList = []
     isClockwisePointsList = []
@@ -24,7 +25,11 @@ class WidgetCalculation(QtWidgets.QLabel):
 
     def __init__(self, parent):
         super().__init__(parent=parent)
+        self.parent = parent
+
         self.c = Communicate()
+
+        self.setTitle("Experiment information")
 
         globalLayout = QVBoxLayout()
 
@@ -43,22 +48,36 @@ class WidgetCalculation(QtWidgets.QLabel):
 
         globalLayout.addLayout(textFieldsLayout, 5)
 
+        impExpLayout = QHBoxLayout()
+
+        self.btnImport = QPushButton('Import')
+        self.btnImport.clicked.connect(self.importFile)
+        impExpLayout.addWidget(self.btnImport, 1)
+
+        self.btnExport = QPushButton('Export')
+        impExpLayout.addWidget(self.btnExport, 1)
+
+        globalLayout.addLayout(impExpLayout, 1)
+
         self.btnCalc = QPushButton('Calculate!')
         self.btnCalc.setToolTip('This is a <b>QPushButton</b> widget')
         self.btnCalc.resize(self.btnCalc.sizeHint())
         self.btnCalc.clicked.connect(self.calc)
-
         globalLayout.addWidget(self.btnCalc, 1)
 
         self.btnClear = QPushButton('Clear')
         self.btnClear.clicked.connect(self.clear)
-
         globalLayout.addWidget(self.btnClear, 1)
 
         self.finalKoefsLabel = QLabel()
         globalLayout.addWidget(self.finalKoefsLabel, 3)
 
         self.setLayout(globalLayout)
+
+    def importFile(self):
+        # filename, filetype = QFileDialog.getOpenFileName(self, "Выбрать файл", "./")
+        # print(filename, filetype)
+        return
 
     def calc(self):
         self.finalPointsList = []

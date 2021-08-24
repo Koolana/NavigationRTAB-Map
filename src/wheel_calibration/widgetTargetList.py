@@ -6,7 +6,7 @@ class Communicate(QObject):
     sendTargets = pyqtSignal(list)
     sendData = pyqtSignal(int, float)
 
-class WidgetTargetList(QtWidgets.QLabel):
+class WidgetTargetList(QtWidgets.QGroupBox):
     currTypeTest = 0
 
     def __init__(self, parent):
@@ -23,6 +23,7 @@ class WidgetTargetList(QtWidgets.QLabel):
         # self.btnSave.clicked.connect(self.sendTargets)
         #
         # pointLayout.addWidget(self.btnSave)
+        self.setTitle("Test settings")
 
         self.labelParam1 = QLabel("Line length:")
         self.labelParam1.setAlignment(QtCore.Qt.AlignBottom)
