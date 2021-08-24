@@ -44,6 +44,10 @@ class MoveController(QtCore.QObject):
     state = 0
     numIter = 0
 
+    currL = 0
+    prevX = 0
+    prevY = 0
+
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.c = Communicate()
@@ -75,7 +79,6 @@ class MoveController(QtCore.QObject):
             return
 
         # print("Odom data:", data)
-
         x = float(data[3])
         y = float(data[4])
         th = float(data[2])
@@ -84,6 +87,8 @@ class MoveController(QtCore.QObject):
         vy = 0
         vth = float(data[1])
 
+        self.currL += math.sqrt(((self.prevX - x) ** 2) + ((self.prevY - y) ** 2))
+
         self.c.sendTrajPoint.emit([x, y, th, vx, vth])
 
         if self.testType == 0:
@@ -91,11 +96,11 @@ class MoveController(QtCore.QObject):
                 self.state = 2
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 2 and abs(abs(x) - self.a) < self.err:
+            if self.state == 2 and abs(self.currL - self.a) < self.err:
                 self.finish = True
                 self.state = 0
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.currL = 0
+                self.stopMoving()
 
             if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
@@ -108,53 +113,49 @@ class MoveController(QtCore.QObject):
                 self.state = 2
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 2 and abs(abs(x) - self.a) < self.err:
+            if self.state == 2 and abs(self.currL - self.a) < self.err:
                 self.state = 3
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
             if self.state == 3 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 4
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
+                self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 4 and abs(abs(y) - self.a) < self.err:
+            if self.state == 4 and abs(self.currL - self.a) < self.err:
                 self.state = 5
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
             if self.state == 5 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 6
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
+                self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 6 and abs(x) < self.err:
+            if self.state == 6 and abs(self.currL - self.a) < self.err:
                 self.state = 7
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
             if self.state == 7 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 8
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
+                self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 8 and abs(y) < self.err:
+            if self.state == 8 and abs(self.currL - self.a) < self.err:
                 self.state = 9
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
             if self.state == 9 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < 0.05:
                 self.state = 0
                 self.finish = True
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
+                self.currL = 0
 
             if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
@@ -174,14 +175,16 @@ class MoveController(QtCore.QObject):
             if self.state == 2 and abs(th) > 2 * math.pi * (1 + self.numIter):
                 self.finish = True
                 self.state = 0
-                self.arduino.write(bytes('p', 'utf-8'))
-                time.sleep(1)
+                self.stopMoving()
 
             if abs(vx) < 0.01 and abs(vth) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
                 self.numIter += 1
                 self.c.changeIter.emit(self.numIter)
                 self.finish = False
+
+        self.prevX = x
+        self.prevY = y
 
         #
         #
@@ -282,6 +285,10 @@ class MoveController(QtCore.QObject):
         self.finish = False
         self.state = 0
         self.numIter = 0
+
+        self.currL = 0
+        self.prevX = 0
+        self.prevY = 0
 
     def changeRotateDir(self):
         self.isClockwise = not self.isClockwise

@@ -253,7 +253,7 @@ class WidgetDraw(QtWidgets.QLabel):
         self.robotVel = [point[3], point[4]]
 
         if abs(self.trajectoryPoints[-1][0][0] - point[0]) > 0.03 or abs(self.trajectoryPoints[-1][0][1] - point[1]) > 0.03 or abs(self.trajectoryPoints[-1][0][2] - point[2]) > 0.03:
-            print(self.robotPos)
+            # print(self.robotPos)
             self.trajectoryPoints.append([point[:3], self.currentIterColor])
-            
+
         self.update()
