@@ -79,7 +79,7 @@ double wheelRightV = 0;
 double omegaRight = 0;
 double omegaLeft = 0;
 double R = 0.0682;
-double L = 0.275;  //0.275  //0.351
+double L = 0.3015;  //0.275  //0.351
 double V = 0;
 double omega = 0;
 double Vl = 0;
@@ -88,8 +88,8 @@ double SetV = 0;
 double SetW = 0;
 double maxSpeed = 0.6848;  // максимальная линейная скорость при скважности 100%, в м/с
 
-double CR = 1;  // 1.0038  // корректирующие коеффициенты для радиусов колес
-double CL = 1;  // 0.9962
+double CR = 1.0136;  // 1.0038  // корректирующие коеффициенты для радиусов колес
+double CL = 0.9864;  // 0.9962
 
 double yaw = 0;
 double x = 0;
