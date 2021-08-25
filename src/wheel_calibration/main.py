@@ -68,6 +68,7 @@ if __name__ == '__main__':
 
     mc = MoveController(w)
     wtl.c.sendTargets.connect(mc.receiveNewTargets)
+    wtl.c.sendMaxIter.connect(mc.setMaxIter)
     btnStart.clicked.connect(mc.startMoving)
     btnStop.clicked.connect(mc.stopMoving)
     btnNextItr.clicked.connect(mc.resetMoving)

@@ -43,6 +43,7 @@ class MoveController(QtCore.QObject):
     testType = 0
     state = 0
     numIter = 0
+    maxIter = 1
 
     currL = 0
     prevX = 0
@@ -173,14 +174,16 @@ class MoveController(QtCore.QObject):
                     self.move_callback(self.maxSpeed, self.maxSpeed / self.a)
 
             if self.state == 2 and abs(th) > 2 * math.pi * (1 + self.numIter):
-                self.finish = True
-                self.state = 0
-                self.stopMoving()
+                self.numIter += 1
+                self.c.changeIter.emit(self.numIter)
+
+                if  self.numIter == self.maxIter:
+                    self.finish = True
+                    self.state = 0
+                    self.stopMoving()
 
             if abs(vx) < 0.01 and abs(vth) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
-                self.numIter += 1
-                self.c.changeIter.emit(self.numIter)
                 self.finish = False
 
         self.prevX = x
@@ -289,6 +292,9 @@ class MoveController(QtCore.QObject):
         self.currL = 0
         self.prevX = 0
         self.prevY = 0
+
+    def setMaxIter(self, num):
+        self.maxIter = num
 
     def changeRotateDir(self):
         self.isClockwise = not self.isClockwise

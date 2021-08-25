@@ -1,10 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QRadioButton
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 class Communicate(QObject):
     sendTargets = pyqtSignal(list)
     sendData = pyqtSignal(int, float)
+    sendMaxIter = pyqtSignal(int)
 
 class WidgetTargetList(QtWidgets.QGroupBox):
     currTypeTest = 0
@@ -13,7 +15,7 @@ class WidgetTargetList(QtWidgets.QGroupBox):
         super().__init__(parent=parent)
         self.c = Communicate()
 
-        pointLayout = QVBoxLayout()
+        pointLayout = QGridLayout()
         # self.te = QTextEdit()
         # pointLayout.addWidget(self.te)
         #
@@ -27,32 +29,39 @@ class WidgetTargetList(QtWidgets.QGroupBox):
 
         self.labelParam1 = QLabel("Line length:")
         self.labelParam1.setAlignment(QtCore.Qt.AlignBottom)
-        pointLayout.addWidget(self.labelParam1, 1)
+        pointLayout.addWidget(self.labelParam1, 0, 0)
 
         self.le = QLineEdit("1")
         self.le.editingFinished.connect(self.testChoosed)
-        pointLayout.addWidget(self.le, 1)
+        pointLayout.addWidget(self.le, 1, 0)
 
         radiobutton = QRadioButton("Line")
         radiobutton.setChecked(True)
         radiobutton.typeTest = 0
         radiobutton.toggled.connect(self.onClicked)
-        pointLayout.addWidget(radiobutton, 1)
+        pointLayout.addWidget(radiobutton, 2, 0)
 
         radiobutton = QRadioButton("Square")
         radiobutton.typeTest = 1
         radiobutton.toggled.connect(self.onClicked)
-        pointLayout.addWidget(radiobutton, 1)
+        pointLayout.addWidget(radiobutton, 3, 0)
 
         radiobutton = QRadioButton("Сircle")
         radiobutton.typeTest = 2
         radiobutton.toggled.connect(self.onClicked)
-        pointLayout.addWidget(radiobutton, 1)
+        pointLayout.addWidget(radiobutton, 4, 0)
+
+        self.leNumIter = QLineEdit("1")
+        self.leNumIter.editingFinished.connect(self.maxIterationChanged)
+        pointLayout.addWidget(self.leNumIter, 4, 1)
 
         self.setLayout(pointLayout)
 
     def testChoosed(self):
         self.c.sendData.emit(self.currTypeTest, float(self.le.text()))
+
+    def maxIterationChanged(self):
+        self.c.sendMaxIter.emit(int(self.leNumIter.text()))
 
     def onClicked(self):
         radioButton = self.sender()
