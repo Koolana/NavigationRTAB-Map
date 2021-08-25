@@ -79,7 +79,7 @@ double wheelRightV = 0;
 double omegaRight = 0;
 double omegaLeft = 0;
 double R = 0.0682;
-double L = 0.3015;  //0.275  //0.351
+double L = 0.2799;  // 0.3015;  //0.275  //0.351
 double V = 0;
 double omega = 0;
 double Vl = 0;
@@ -88,8 +88,8 @@ double SetV = 0;
 double SetW = 0;
 double maxSpeed = 0.6848;  // максимальная линейная скорость при скважности 100%, в м/с
 
-double CR = 1.0136;  // 1.0038  // корректирующие коеффициенты для радиусов колес
-double CL = 0.9864;  // 0.9962
+double CR = 1.0027;  // 0.9864;  // 1.0136  // 1.0038  // корректирующие коеффициенты для радиусов колес
+double CL = 0.9973;  // 1.0136;  // 0.9864  // 0.9962
 
 double yaw = 0;
 double x = 0;
@@ -117,8 +117,8 @@ void Motor() {
   PIDMovement(SetSpeedR,SetSpeedL);  // передается линейная скорость колес, в м/сек
 }
 void SetSpeed(double LinearVelocity, double AngularVelocity) {
-  SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R*CR))*R*CR;   //M/S - линейная скорость колеса
-  SetSpeedL = (((2*LinearVelocity)-(AngularVelocity*L))/(2*R*CL))*R*CL;
+  SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R))*R;   //M/S - линейная скорость колеса
+  SetSpeedL = (((2*LinearVelocity)-(AngularVelocity*L))/(2*R))*R;
 }
 void CheckSettingsSpeed() {
   if (settingSpeed) {
@@ -195,29 +195,29 @@ void Timer_finish()  {
   wheelSpeedL = double(wheelImpL / dT); // число импульсов за сек
 
   // пройденный колесом путь, м
-  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R*CR);  // 663  // метры L = 2*PI*R*n/N
-  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R*CL);  //*
+  wheelRightS = ((wheelSpeedR / 1450) * 2 * 3.14 * R)*CR;  // 663  // метры L = 2*PI*R*n/N
+  wheelLeftS  = ((wheelSpeedL / 1450) * 2 * 3.14 * R)*CL;  //*
 
   // линейная скорость колеса
   wheelRightV = wheelRightS/ 1; // mетры за сек
   wheelLeftV  = wheelLeftS / 1;
 
   // угловая скорость колеса
-  omegaRight = wheelRightV/R*CR;   // rad за сек
-  omegaLeft  = wheelLeftV/R*CL;
+  omegaRight = wheelRightV/R;   // rad за сек
+  omegaLeft  = wheelLeftV/R;
 
   // фактическая линейная скорость центра робота
-  V     = (R/2)*(omegaRight * (DirectionR ? -1 : 1) + omegaLeft * (DirectionL ? -1 : 1));//m/s
+  V     = (R/2)*omegaRight * (DirectionR ? -1 : 1) + (R/2)*omegaLeft * (DirectionL ? -1 : 1);//m/s
   // фактическая угловая скорость поворота робота
-  omega = (R/L)*(omegaRight * (DirectionR ? -1 : 1) - omegaLeft * (DirectionL ? -1 : 1));
+  omega = (R/L)*omegaRight * (DirectionR ? -1 : 1) - (R/L)*omegaLeft * (DirectionL ? -1 : 1);
 
   yaw+=(omega * dT);    // направление в рад
   x += V*cos(yaw) * dT; // в метрах
   y += V*sin(yaw) * dT;
 
   // проверка
-  Vr = (((2*V)+(omega*L))/(2*R*CR))*R*CR; //M/S
-  Vl = (((2*V)-(omega*L))/(2*R*CL))*R*CL;
+  Vr = (((2*V)+(omega*L))/(2*R))*R; //M/S
+  Vl = (((2*V)-(omega*L))/(2*R))*R;
 
   wheelImpR = 0;
   wheelImpL = 0;

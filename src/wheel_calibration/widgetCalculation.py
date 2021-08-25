@@ -85,7 +85,7 @@ class WidgetCalculation(QtWidgets.QGroupBox):
 
         if filename == '':
             return
-            
+
         self.clear()
 
         file = open(filename, 'r')
@@ -185,16 +185,26 @@ class WidgetCalculation(QtWidgets.QGroupBox):
             sum_delta_y_right = 0
             sum_delta_x_left = 0
             sum_delta_y_left = 0
+            rightCount = 0
+            leftCount = 0
 
             for delta, isClockwise in zip(deltas, self.isClockwisePointsList):
                 if isClockwise:
                     sum_delta_x_right += delta[0]
                     sum_delta_y_right += delta[1]
+                    rightCount += 1
                 else:
                     sum_delta_x_left += delta[0]
                     sum_delta_y_left += delta[1]
+                    leftCount += 1
 
-            print(self.isClockwisePointsList)
+            sum_delta_x_right /= rightCount
+            sum_delta_y_right /= rightCount
+
+            sum_delta_x_left /= leftCount
+            sum_delta_y_left /= leftCount
+
+            # print(self.isClockwisePointsList)
 
             betta = (sum_delta_x_right - sum_delta_x_left)/((-4)*self.a)
 
