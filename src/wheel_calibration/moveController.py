@@ -114,45 +114,45 @@ class MoveController(QtCore.QObject):
                 self.state = 2
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 2 and abs(self.currL - self.a) < self.err:
+            if self.state == 2 and self.currL + vx / 10 > self.a:
                 self.state = 3
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 3 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < self.err:
+            if self.state == 3 and abs(th + vth / 10) > math.pi / 2 + 2 * math.pi * self.numIter:
                 self.state = 4
                 self.stopMoving()
                 self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 4 and abs(self.currL - self.a) < self.err:
+            if self.state == 4 and self.currL + vx / 10 > self.a:
                 self.state = 5
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 5 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < self.err:
+            if self.state == 5 and abs(th + vth / 10) > math.pi + 2 * math.pi * self.numIter:
                 self.state = 6
                 self.stopMoving()
                 self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 6 and abs(self.currL - self.a) < self.err:
+            if self.state == 6 and self.currL + vx / 10 > self.a:
                 self.state = 7
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 7 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < self.err:
+            if self.state == 7 and abs(th + vth / 10) > 3 * math.pi / 2 + 2 * math.pi * self.numIter:
                 self.state = 8
                 self.stopMoving()
                 self.currL = 0
                 self.move_callback(self.maxSpeed, 0)
 
-            if self.state == 8 and abs(self.currL - self.a) < self.err:
+            if self.state == 8 and self.currL + vx / 10 > self.a:
                 self.state = 9
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 9 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < self.err:
+            if self.state == 9 and abs(th + vth / 10) > 2 * math.pi + 2 * math.pi * self.numIter:
                 self.currL = 0
                 self.numIter += 1
                 self.c.changeIter.emit(self.numIter)
