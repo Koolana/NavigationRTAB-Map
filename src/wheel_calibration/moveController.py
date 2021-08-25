@@ -119,7 +119,7 @@ class MoveController(QtCore.QObject):
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 3 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 3 and abs(abs(th) - (math.pi / 2 + 2 * math.pi * self.numIter)) < self.err:
                 self.state = 4
                 self.stopMoving()
                 self.currL = 0
@@ -130,7 +130,7 @@ class MoveController(QtCore.QObject):
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 5 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 5 and abs(abs(th) - (math.pi + 2 * math.pi * self.numIter)) < self.err:
                 self.state = 6
                 self.stopMoving()
                 self.currL = 0
@@ -141,7 +141,7 @@ class MoveController(QtCore.QObject):
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 7 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < 0.05:
+            if self.state == 7 and abs(abs(th) - (3 * math.pi / 2 + 2 * math.pi * self.numIter)) < self.err:
                 self.state = 8
                 self.stopMoving()
                 self.currL = 0
@@ -152,16 +152,21 @@ class MoveController(QtCore.QObject):
                 self.stopMoving()
                 self.move_callback(0, (-1 if self.isClockwise else 1) * self.maxRotate)
 
-            if self.state == 9 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < 0.05:
-                self.state = 0
-                self.finish = True
-                self.stopMoving()
+            if self.state == 9 and abs(abs(th) - (2 * math.pi + 2 * math.pi * self.numIter)) < self.err:
                 self.currL = 0
+                self.numIter += 1
+                self.c.changeIter.emit(self.numIter)
+
+                if  self.numIter == self.maxIter:
+                    self.state = 0
+                    self.finish = True
+                else:
+                    self.state = 1
+
+                self.stopMoving()
 
             if abs(vx) < 0.01 and self.finish:
                 self.c.finalPosition.emit([x, y, th])
-                self.numIter += 1
-                self.c.changeIter.emit(self.numIter)
                 self.finish = False
 
         if self.testType == 2:
