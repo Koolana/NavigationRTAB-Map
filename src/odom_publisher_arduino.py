@@ -32,7 +32,7 @@ def callback(data):
 
     if not input_msg_avaible:
         current_msg = "v" + "{0:.2f}".format(data.linear.x) + \
-                      " " + "{0:.2f}".format(data.angular.z)
+                      " " + "{0:.2f}".format(data.angular.z) + "\n"
         print("Update msg: ", current_msg)
         input_msg_avaible = True
 
@@ -46,8 +46,10 @@ def moveCallback(event):
 
 
 if __name__ == '__main__':
-    arduino = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=.1)
+    arduino = serial.Serial(port='/dev/ttyACM0', baudrate=57600, timeout=.1)
     print(serial.VERSION)
+
+    time.sleep(1)  # waiting arduino
 
     topic = rospy.Publisher('odom', Odometry, queue_size=10)
     rospy.init_node('test_topic_publisher')
@@ -55,7 +57,7 @@ if __name__ == '__main__':
 
     rospy.Subscriber("cmd_vel", Twist, callback)
 
-    rospy.Timer(rospy.Duration(1.1), moveCallback)
+    rospy.Timer(rospy.Duration(1), moveCallback)
 
     odom_broadcaster = tf.TransformBroadcaster()
 
@@ -70,15 +72,14 @@ if __name__ == '__main__':
     current_time = rospy.Time.now()
     last_time = rospy.Time.now()
 
-    time.sleep(1)  # waiting arduino
-
     # write_read("v0.1 0")
 
     while not rospy.is_shutdown():
         current_time = rospy.Time.now()
 
         num = "o"
-        data = arduino.readline()  # write_read(num)
+        data = write_read(num)
+        # data = arduino.readline()  # write_read(num)
         data = data.decode("utf-8").split("; ")
         print(data)
 
