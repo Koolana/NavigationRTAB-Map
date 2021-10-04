@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     rospy.Subscriber("cmd_vel", Twist, callback)
 
-    rospy.Timer(rospy.Duration(1), moveCallback)
+    rospy.Timer(rospy.Duration(0.1), moveCallback)
 
     odom_broadcaster = tf.TransformBroadcaster()
 
@@ -91,13 +91,16 @@ if __name__ == '__main__':
             print("x = ", data[3])
             print("y = ", data[4])
 
-            x = float(data[3])
-            y = float(data[4])
-            th = float(data[2])
+            try:
+                x = float(data[3])
+                y = float(data[4])
+                th = float(data[2])
 
-            vx = float(data[0])
-            vy = 0
-            vth = float(data[1])
+                vx = float(data[0])
+                vy = 0
+                vth = float(data[1])
+            except:
+                print("Float error")
 
             # since all odometry is 6DOF we'll need a quaternion created from yaw
             odom_quat = tf.transformations.quaternion_from_euler(0, 0, th)
