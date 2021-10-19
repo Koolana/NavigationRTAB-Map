@@ -102,6 +102,11 @@
     <remap from="odom" to="/odom"/>
     <param name="DWAPlannerROS/min_vel_x" value="0.0" if="false" />
   </node>
+  
+  <!-- explore -->
+  <node pkg="explore_lite" type="explore" respawn="true" name="explore" output="screen">
+    <rosparam file="$(find stereo_nav)/config/exploration.yaml" command="load" />
+  </node>
 
   <!-- rviz -->
   <group if="true">
