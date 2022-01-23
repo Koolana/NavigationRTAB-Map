@@ -13,25 +13,31 @@
   </node> -->
 
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
-     <arg name="align_depth" value="true" />
-     <arg name="filters" value="pointcloud" />
+     <arg name="align_depth" value="true"/>
+     <arg name="filters" value="pointcloud"/>
   </include>
 
+  <rosparam>
+    /camera/stereo_module/emitter_enabled: 0
+    /camera/stereo_module enable_auto_exposure: False
+    /camera/stereo_module exposure: 18500
+    /camera/stereo_module gain: 100
+  </rosparam>
 
   <!-- <remap from="cloud_in" to="/rtabmap/cloud_map"/>
   <remap from="map" to="/rtabmap/grid_map"/> -->
 
   <!-- Define robot's model -->
-  <param name="robot_description" textfile="$(find stereo_nav)/urdf/newModel.xml" />
+  <param name="robot_description" textfile="$(find stereo_nav)/urdf/newModel.xml"/>
 
   <!-- Publish robot's TF -->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="false"/>
-    <param name="rate" value="50" />
+    <param name="rate" value="50"/>
   </node>
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="publish_frequency" type="double" value="50.0"/>
     <param name="tf_prefix" value=""/>
   </node>
 
@@ -72,7 +78,7 @@
         <remap from="scan" to="/scan"/>
     </node> -->
 
-    <!-- Visual SLAM: args: "delete_db_on_start" and "udebug" -->
+    <!-- Visual SLAM args - "delete_db_on_start" -->
     <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
       <param name="database_path"       type="string" value="~/.ros/rtabmap.db"/>
       <param name="frame_id"            type="string" value="base_footprint"/>
@@ -117,14 +123,14 @@
 
   <!-- move_base -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find stereo_nav)/config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find stereo_nav)/config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find stereo_nav)/config/move_base/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find stereo_nav)/config/move_base/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find stereo_nav)/config/move_base/move_base_params.yaml" command="load" />
-    <rosparam file="$(find stereo_nav)/config/move_base/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find stereo_nav)/config/move_base/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find stereo_nav)/config/move_base/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find stereo_nav)/config/move_base/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find stereo_nav)/config/move_base/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find stereo_nav)/config/move_base/move_base_params.yaml" command="load"/>
+    <rosparam file="$(find stereo_nav)/config/move_base/dwa_local_planner_params.yaml" command="load"/>
 
-    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
 
     <remap from="cmd_vel" to="/cmd_vel"/>
     <!-- <remap from="odom" to="/odom"/> -->
@@ -134,7 +140,7 @@
 
   <!-- explore -->
   <!-- <node pkg="explore_lite" type="explore" respawn="true" name="explore" output="screen">
-    <rosparam file="$(find stereo_nav)/config/exploration/exploration.yaml" command="load" />
+    <rosparam file="$(find stereo_nav)/config/exploration/exploration.yaml" command="load"/>
   </node> -->
 
   <!-- rviz -->
