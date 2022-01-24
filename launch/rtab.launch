@@ -31,7 +31,7 @@
   </include>
 
   <rosparam>
-    /camera/stereo_module/emitter_enabled: 1
+    /camera/stereo_module/emitter_enabled: 0
     /camera/stereo_module enable_auto_exposure: False
     /camera/stereo_module exposure: 18500
     /camera/stereo_module gain: 100
@@ -154,7 +154,7 @@
       <param name="approx_sync"      type="bool"   value="true"/>
 
       <remap from="odom" to="/rgbd_odometry" if="$(arg odomV)"/>
-      <!-- <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/> -->
+      <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/>
       <remap from="odom" to="/wheel_odometry" if="$(arg odomW)"/>
     </node>
   </group>
@@ -174,7 +174,7 @@
     <remap from="map" to="/map"/>
 
     <remap from="odom" to="/rgbd_odometry" if="$(arg odomV)"/>
-    <!-- <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/> -->
+    <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/>
     <remap from="odom" to="/wheel_odometry" if="$(arg odomW)"/>
   </node>
 
