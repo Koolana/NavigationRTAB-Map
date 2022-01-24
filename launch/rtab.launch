@@ -3,7 +3,7 @@
   <arg name="odomV" default="true"/>
   <arg name="odomW" default="false"/>
 
-  <arg name="mappingWithLidar" default="true"/>
+  <arg name="mappingWithLidar" default="false"/>
 
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
@@ -146,6 +146,26 @@
       <param name="Icp/VoxelSize"                 type="string" value="0.05"/>
       <param name="Icp/MaxCorrespondenceDistance" type="string" value="0.1"/>
     </node>
+
+    <!-- Map fusion (not working) -->
+    <!-- <node name="map_assembler" pkg="rtabmap_ros" type="map_assembler">
+       <param name="Grid/CellSize" type="double" value="0.1"/>
+
+       <remap from="map_assembler/grid_map" to="/map"/>
+
+       <param name="regenerate_local_grids" value="true"/>
+    </node> -->
+
+    <!-- Obstacles detection TODO -->
+    <!-- <node pkg="nodelet" type="nodelet" name="obstacles_detection" args="standalone rtabmap_ros/obstacles_detection">
+      <remap from="cloud" to="/camera/depth/color/point"/>
+      <remap from="obstacles" to="/planner_cloud"/>
+
+      <param name="frame_id" type="string" value="base_footprint"/>
+      <param name="map_frame_id" type="string" value="map"/>
+      <param name="Grid/MinClusterSize" type="int" value="20"/>
+      <param name="Grid/MaxObstacleHeight" type="double" value="0.0"/>
+   </node> -->
 
     <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
       <param name="subscribe_scan"   type="bool"   value="$(arg odomL)"/>
