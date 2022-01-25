@@ -1,4 +1,6 @@
 <launch>
+  <arg name="useGazebo" default="false"/>
+
   <arg name="odomL" default="false"/>
   <arg name="odomV" default="true"/>
   <arg name="odomW" default="false"/>
@@ -8,34 +10,36 @@
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
 
-  <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
-    <param name="port" type="string" value="/dev/ttyACM0"/>
-    <param name="baud" type="int" value="57600"/>
+  <group if="$(eval not arg('useGazebo'))">
+    <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
+      <param name="port" type="string" value="/dev/ttyACM0"/>
+      <param name="baud" type="int" value="57600"/>
 
-    <remap from="odom" to="/wheel_odometry"/>
-  </node>
+      <remap from="odom" to="/wheel_odometry"/>
+    </node>
 
-  <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen" if="$(eval arg('mappingWithLidar') or arg('odomL'))">
-    <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>
-    <param name="serial_baudrate"     type="int"    value="115200"/>
-    <param name="frame_id"            type="string" value="base_scan"/>
-    <param name="inverted"            type="bool"   value="false"/>
-    <param name="angle_compensate"    type="bool"   value="true"/>
+    <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen" if="$(eval arg('mappingWithLidar') or arg('odomL'))">
+      <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>
+      <param name="serial_baudrate"     type="int"    value="115200"/>
+      <param name="frame_id"            type="string" value="base_scan"/>
+      <param name="inverted"            type="bool"   value="false"/>
+      <param name="angle_compensate"    type="bool"   value="true"/>
 
-    <remap from="scan" to="/scan"/>
-  </node>
+      <remap from="scan" to="/scan"/>
+    </node>
 
-  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
-     <arg name="align_depth" value="true"/>
-     <arg name="filters" value="pointcloud"/>
-  </include>
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+       <arg name="align_depth" value="true"/>
+       <arg name="filters" value="pointcloud"/>
+    </include>
 
-  <rosparam>
-    /camera/stereo_module/emitter_enabled: 0
-    /camera/stereo_module enable_auto_exposure: False
-    /camera/stereo_module exposure: 18500
-    /camera/stereo_module gain: 100
-  </rosparam>
+    <rosparam>
+      /camera/stereo_module/emitter_enabled: 0
+      /camera/stereo_module enable_auto_exposure: False
+      /camera/stereo_module exposure: 18500
+      /camera/stereo_module gain: 100
+    </rosparam>
+  </group>
 
   <!-- <remap from="cloud_in" to="/rtabmap/cloud_map"/>
   <remap from="map" to="/rtabmap/grid_map"/> -->
