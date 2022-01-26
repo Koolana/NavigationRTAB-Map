@@ -10,7 +10,7 @@
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
 
-  <group if="$(eval not arg('useGazebo'))">
+  <group unless="$(arg useGazebo)">
     <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
       <param name="port" type="string" value="/dev/ttyACM0"/>
       <param name="baud" type="int" value="57600"/>
@@ -132,7 +132,7 @@
       <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/>
       <remap from="odom" to="/wheel_odometry" if="$(arg odomW)"/>
 
-      <remap from="scan" to="/scan"/>
+      <remap from="scan" to="/scan" if="$(arg mappingWithLidar)"/>
 
       <remap from="grid_map" to="/map"/>
 
@@ -140,6 +140,16 @@
       <param name="Reg/Strategy" type="string" value="1"/>
       <param name="Reg/Force3DoF" type="string" value="true"/>
       <param name="GridGlobal/MinSize" type="string" value="20"/>
+
+      <!-- <param name="Rtabmap/TimeThr"        type="string" value="500"/>
+      <param name="RGBD/NeighborLinkRefining"        type="string" value="true"/>
+      <param name="RGBD/LocalRadius"             type="string" value="4"/>
+      <param name="Mem/RehearsalSimilarity"      type="string" value="0.30"/>
+      <param name="Rtabmap/DetectionRate"        type="string" value="1"/>
+      <param name="RGBD/OptimizeFromGraphEnd"    type="string" value="true"/>
+      <param name="Optimizer/VarianceIgnored" type="string" value="false"/>
+      <param name="RGBD/PlanAngularVelocity"     type="string" value="1.0"/>
+      <param name="Icp/CorrespondenceRatio"  type="string" value="0.2"/> -->
 
       <!-- Occupancy grid from lidar - false, occupancy grid from camera - true -->
       <param name="Grid/FromDepth" type="string" value="$(arg gridFromCamera)"/>
