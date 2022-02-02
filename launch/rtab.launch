@@ -150,8 +150,15 @@
       <!-- Фильтрация облаков точек -->
       <param name="cloud_noise_filtering_radius" value="0.05"/>
       <param name="cloud_noise_filtering_min_neighbors" value="2"/>
+      <!-- <param name="Grid/NoiseFilteringRadius" value="0"/> -->
 
-      <!-- Максимальная ошиюка при оптимизации графа -->
+      <!-- Частота детекции замыканий -->
+      <param name="Rtabmap/DetectionRate"		type="string" value="2"/>
+
+      <!-- Minimum visual inliers to accept loop closure -->
+      <param name="Vis/MinInliers"  type="string" value="15"/>
+
+      <!-- Максимальная ошибка при оптимизации графа -->
       <param name="RGBD/OptimizeMaxError" type="string" value="5.0"/>
 
       <!-- Wait loop closure and dont star building new map -->
@@ -164,16 +171,6 @@
 
       <!-- Карта гарантированно плоская (робот движется только по плоскости)-->
       <param name="Optimizer/Slam2D" value="true" />
-
-      <!-- <param name="Rtabmap/TimeThr"        type="string" value="500"/>
-      <param name="RGBD/NeighborLinkRefining"        type="string" value="true"/>
-      <param name="RGBD/LocalRadius"             type="string" value="4"/>
-      <param name="Mem/RehearsalSimilarity"      type="string" value="0.30"/>
-      <param name="Rtabmap/DetectionRate"        type="string" value="1"/>
-      <param name="RGBD/OptimizeFromGraphEnd"    type="string" value="true"/>
-      <param name="Optimizer/VarianceIgnored" type="string" value="false"/>
-      <param name="RGBD/PlanAngularVelocity"     type="string" value="1.0"/>
-      <param name="Icp/CorrespondenceRatio"  type="string" value="0.2"/> -->
 
       <!-- Occupancy grid from lidar - false, occupancy grid from camera - true -->
       <param name="Grid/FromDepth" type="string" value="$(arg gridFromCamera)"/>
