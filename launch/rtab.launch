@@ -147,8 +147,12 @@
       <param name="odom_tf_linear_variance" value="0.01"/> <!-- adjust depending on real odom error -->
       <param name="odom_tf_angular_variance" value="0.05"/> <!-- adjust depending on real odom error -->
 
+      <!-- Фильтрация облаков точек -->
+      <param name="cloud_noise_filtering_radius" value="0.05"/>
+      <param name="cloud_noise_filtering_min_neighbors" value="2"/>
+
       <!-- Максимальная ошиюка при оптимизации графа -->
-      <param name="RGBD/OptimizeMaxError" type="string" value="3.0"/>
+      <param name="RGBD/OptimizeMaxError" type="string" value="5.0"/>
 
       <!-- Wait loop closure and dont star building new map -->
       <param name="Rtabmap/StartNewMapOnLoopClosure" value="true"/>
