@@ -5,7 +5,7 @@
   <arg name="odomV" default="true"/>
   <arg name="odomW" default="false"/>
 
-  <arg name="mappingWithLidar" default="false"/>
+  <arg name="mappingWithLidar" default="true"/>
 
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
@@ -76,6 +76,13 @@
        <param name="frame_id"      type="string" value="base_footprint"/>
        <param name="odom_frame_id" type="string" value="odom"/>
 
+       <!-- Сброс одного кадра после потери -->
+       <param name="Odom/ResetCountdown" value="1" />
+
+       <!-- Ограничем количество оцениваемых значений одометрии
+       так как робот двигается только по плоской поверхности (x, y, theta)-->
+       <param name="Reg/Force3DoF" value="true" />
+
        <param name="Odom/Strategy"      type="string" value="0"/> <!-- 0=Frame-to-Map, 1=Frame=to=Frame -->
        <param name="Vis/EstimationType" type="string" value="0"/> <!-- 0=3D->3D 1=3D->2D (PnP) -->
        <param name="Vis/MaxDepth"       type="string" value="10"/>
@@ -136,10 +143,23 @@
 
       <remap from="grid_map" to="/map"/>
 
+      <param name="odom_frame_id" value="odom"/> <!-- adjust to actual odometry frame id -->
+      <param name="odom_tf_linear_variance" value="0.01"/> <!-- adjust depending on real odom error -->
+      <param name="odom_tf_angular_variance" value="0.05"/> <!-- adjust depending on real odom error -->
+
+      <!-- Максимальная ошиюка при оптимизации графа -->
+      <param name="RGBD/OptimizeMaxError" type="string" value="3.0"/>
+
+      <!-- Wait loop closure and dont star building new map -->
+      <param name="Rtabmap/StartNewMapOnLoopClosure" value="true"/>
+
       <!-- RTAB-Map's parameters -->
       <param name="Reg/Strategy" type="string" value="1"/>
       <param name="Reg/Force3DoF" type="string" value="true"/>
       <param name="GridGlobal/MinSize" type="string" value="20"/>
+
+      <!-- Карта гарантированно плоская (робот движется только по плоскости)-->
+      <param name="Optimizer/Slam2D" value="true" />
 
       <!-- <param name="Rtabmap/TimeThr"        type="string" value="500"/>
       <param name="RGBD/NeighborLinkRefining"        type="string" value="true"/>
