@@ -1,5 +1,6 @@
 <launch>
   <arg name="useGazebo" default="false"/>
+  <arg name="isVisual" default="false"/>
 
   <arg name="odomL" default="false"/>
   <arg name="odomV" default="true"/>
@@ -202,7 +203,7 @@
       <param name="Grid/MaxObstacleHeight" type="double" value="0.0"/>
    </node> -->
 
-    <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
+    <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen" if="$(arg isVisual)">
       <param name="subscribe_scan"   type="bool"   value="$(arg odomL)"/>
       <param name="subscribe_odom"   type="bool"   value="true"/>
       <param name="frame_id"         type="string" value="base_footprint"/>
@@ -239,7 +240,7 @@
   </node> -->
 
   <!-- rviz -->
-  <group if="true">
+  <group if="$(arg isVisual)">
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find stereo_nav)/rviz/navigation_stereo.rviz"/>
   </group>
