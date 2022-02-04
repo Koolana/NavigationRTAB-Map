@@ -1,21 +1,35 @@
 footprint: [[-0.20, -0.20], [-0.20, 0.20], [0.20, 0.20], [0.20, -0.20]]
-# robot_radius: 0.17
+obstacle_range: 3.0
+raytrace_range: 3.5
 
-inflation_radius: 1.0
-cost_scaling_factor: 3.0
+resolution: 0.1
 
-# map_type: costmap
-# observation_sources: scan
-# scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+robot_base_frame: base_footprint
 
-obstacle_range: 2.0
-raytrace_range: 2.5
+cost_scaling_factor: 10.0
 
-observation_sources: point_cloud_sensor
-point_cloud_sensor: {
-  data_type: PointCloud2,
-  topic: /camera/depth/color/points,
-  marking: true,
-  clearing: true,
-  inf_is_valid: true
-}
+static:
+  map_topic: /map
+
+obstacles:
+  observation_sources: scan
+
+  scan:
+    data_type: LaserScan
+    topic: scan
+    marking: true
+    clearing: true
+
+    inf_is_valid: true
+
+obstacles_c:
+   observation_sources: camera
+
+   camera:
+     data_type: PointCloud2
+     topic: /obstacles_point_cloud
+     marking: true
+     clearing: true
+
+inflation:
+  inflation_radius: 1.0
