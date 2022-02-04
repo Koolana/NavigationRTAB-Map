@@ -149,7 +149,8 @@
       <param name="odom_tf_angular_variance" value="0.05"/> <!-- adjust depending on real odom error -->
 
       <!-- Фильтрация облаков точек -->
-      <param name="cloud_noise_filtering_radius" value="0.05"/>
+      <!-- <param name="cloud_noise_filtering_radius" value="0.05"/> -->
+      <param name="Grid/NoiseFilteringRadius" value="0.05"/>
       <param name="cloud_noise_filtering_min_neighbors" value="2"/>
       <!-- <param name="Grid/NoiseFilteringRadius" value="0"/> -->
 
@@ -167,14 +168,18 @@
 
       <!-- RTAB-Map's parameters -->
       <param name="Reg/Strategy" type="string" value="1"/>
-      <param name="Reg/Force3DoF" type="string" value="true"/>
+      <!-- <param name="Reg/Force3DoF" type="string" value="true"/> -->
       <param name="GridGlobal/MinSize" type="string" value="20"/>
 
       <!-- Карта гарантированно плоская (робот движется только по плоскости)-->
-      <param name="Optimizer/Slam2D" value="true" />
+      <!-- <param name="Optimizer/Slam2D" value="true" /> -->
+      <param name="Reg/Force3DoF" value="true" />
 
       <!-- Occupancy grid from lidar - false, occupancy grid from camera - true -->
       <param name="Grid/FromDepth" type="string" value="$(arg gridFromCamera)"/>
+
+      <!-- Карта также по близости сканирований -->
+      <param name="RGBD/ProximityPathMaxNeighbors" type="string" value="10"/>
 
       <param name="Mem/IncrementalMemory" type="string" value="true"/>
 
