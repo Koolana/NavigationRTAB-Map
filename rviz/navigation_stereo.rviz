@@ -13,6 +13,7 @@ Panels:
         - /Local Map1/Costmap1
         - /Local Map1/Planner1
         - /PointCloud21
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 584
   - Class: rviz/Selection
@@ -108,6 +109,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        wheel_middle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         wheel_right_link:
           Alpha: 1
           Show Axes: false
@@ -130,12 +136,6 @@ Visualization Manager:
           Value: true
         base_scan:
           Value: true
-        camera_aligned_depth_to_color_frame:
-          Value: true
-        camera_color_frame:
-          Value: true
-        camera_color_optical_frame:
-          Value: true
         camera_depth_frame:
           Value: true
         camera_depth_optical_frame:
@@ -152,6 +152,8 @@ Visualization Manager:
           Value: true
         wheel_left_link:
           Value: true
+        wheel_middle_link:
+          Value: true
         wheel_right_link:
           Value: true
       Marker Scale: 1
@@ -167,11 +169,6 @@ Visualization Manager:
                 base_scan:
                   {}
                 camera_link:
-                  camera_aligned_depth_to_color_frame:
-                    camera_color_optical_frame:
-                      {}
-                  camera_color_frame:
-                    {}
                   camera_depth_frame:
                     camera_depth_optical_frame:
                       {}
@@ -179,6 +176,8 @@ Visualization Manager:
                     camera_rgb_optical_frame:
                       {}
                 wheel_left_link:
+                  {}
+                wheel_middle_link:
                   {}
                 wheel_right_link:
                   {}
@@ -402,6 +401,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /explore/frontiers
+      Name: MarkerArray
+      Namespaces:
+        frontiers: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -426,25 +433,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rtabmap_ros/OrbitOriented
-      Distance: 8.75282096862793
+      Distance: 4.1731719970703125
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.9501316547393799
-        Y: -0.2759438455104828
-        Z: -0.29315462708473206
+        X: 3.6111671924591064
+        Y: -1.61670982837677
+        Z: 1.8563302755355835
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7197973728179932
+      Pitch: 0.8597972393035889
       Target Frame: <Fixed Frame>
       Value: OrbitOriented (rtabmap_ros)
-      Yaw: 3.8450264930725098
+      Yaw: 4.610032558441162
     Saved: ~
 Window Geometry:
   Displays:

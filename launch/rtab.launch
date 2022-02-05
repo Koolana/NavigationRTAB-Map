@@ -1,6 +1,7 @@
 <launch>
   <arg name="useGazebo" default="false"/>
   <arg name="isVisual" default="false"/>
+  <arg name="explore" default="false"/>
 
   <arg name="odomL" default="false"/>
   <arg name="odomV" default="true"/>
@@ -226,7 +227,7 @@
        <remap from="depth/image"         to="/camera/aligned_depth_to_color/image_raw"/>
        <remap from="depth/camera_info"   to="/camera/color/camera_info"/>
        <remap from="cloud"               to="voxel_cloud" />
-       
+
        <param name="decimation"  type="double" value="4"/>
        <param name="voxel_size"  type="double" value="0.05"/>
        <param name="approx_sync" type="bool" value="false"/>
@@ -275,9 +276,9 @@
   </node>
 
   <!-- explore -->
-  <!-- <node pkg="explore_lite" type="explore" respawn="true" name="explore" output="screen">
+  <node pkg="explore_lite" type="explore" respawn="true" name="explore" output="screen" if="$(arg explore)">
     <rosparam file="$(find stereo_nav)/config/exploration/exploration.yaml" command="load"/>
-  </node> -->
+  </node>
 
   <!-- rviz -->
   <group if="$(arg isVisual)">

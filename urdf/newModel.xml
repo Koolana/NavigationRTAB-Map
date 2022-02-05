@@ -15,9 +15,9 @@
       <updateRate>30</updateRate>
       <leftJoint>wheel_left_joint</leftJoint>
       <rightJoint>wheel_right_joint</rightJoint>
-      <wheelSeparation>0.287</wheelSeparation>
+      <wheelSeparation>0.322</wheelSeparation>
       <wheelDiameter>0.14</wheelDiameter>
-      <wheelAcceleration>1</wheelAcceleration>
+      <wheelAcceleration>1.5</wheelAcceleration>
       <wheelTorque>20</wheelTorque>
       <rosDebugLevel>na</rosDebugLevel>
     </plugin>
