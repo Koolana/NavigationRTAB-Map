@@ -11,6 +11,7 @@ cost_scaling_factor: 10.0
 
 static:
   map_topic: /map
+  # map_topic: /rtabmap/map_assembler/grid_map
 
 obstacles:
   observation_sources: scan
