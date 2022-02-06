@@ -83,7 +83,7 @@ odom0: rgbd_odometry
 odom0_config: [true,  true,  false,
                false, false, true,
                false, false, false,
-               false, false, true,
+               false, false, false,
                false, false, false]
 
 # If you have high-frequency data or are running with a low frequency parameter value, then you may want to increase
@@ -117,22 +117,36 @@ odom0_relative: false
 # required. Data is specified at the level of pose and twist variables, rather than for each variable in isolation.
 # For messages that have both pose and twist data, the parameter specifies to which part of the message we are applying
 # the thresholds.
-odom0_pose_rejection_threshold: 5
+odom0_pose_rejection_threshold: 2
 odom0_twist_rejection_threshold: 1
 
 # Further input parameter examples
-odom1: example/another_odom
-odom1_config: [false, false, true,
-               false, false, false,
-               false, false, false,
+odom1: icp_odometry
+odom1_config: [true,  true,  false,
                false, false, true,
+               false, false, false,
+               false, false, false,
                false, false, false]
 odom1_differential: false
 odom1_relative: true
 odom1_queue_size: 2
 odom1_pose_rejection_threshold: 2
-odom1_twist_rejection_threshold: 0.2
+odom1_twist_rejection_threshold: 1
 odom1_nodelay: false
+
+# Further input parameter examples
+odom2: wheel_odometry
+odom2_config: [false, false, false,
+               false, false, true,
+               true,  true,  false,
+               false, false, true,
+               false, false, false]
+odom2_differential: false
+odom2_relative: true
+odom2_queue_size: 2
+odom2_pose_rejection_threshold: 2
+odom2_twist_rejection_threshold: 1
+odom2_nodelay: false
 
 # pose0: example/pose
 # pose0_config: [true,  true,  false,
