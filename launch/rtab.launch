@@ -79,6 +79,7 @@
 
        <param name="frame_id"      type="string" value="base_footprint"/>
        <param name="odom_frame_id" type="string" value="odom"/>
+       <param name="publish_tf" value="true"/>
 
        <!-- Сброс одного кадра после потери -->
        <param name="Odom/ResetCountdown" value="1" />
@@ -122,7 +123,16 @@
         <remap from="image" to="/camera/aligned_depth_to_color/image_raw"/>
         <remap from="scan" to="/scan"/>
     </node> -->
+  </group>
 
+  <!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+    <rosparam command="load" file="$(find stereo_nav)/config/robot_localization/ekf_template.yaml" />
+
+    <remap from="odometry/filtered" to="/odom_merge"/>
+    <remap from="accel/filtered" to="/accel_merge"/>
+  </node> -->
+
+  <group ns="rtabmap">
     <!-- Visual SLAM args - "delete_db_on_start" -->
     <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
       <param name="database_path"       type="string" value="~/.ros/rtabmap.db"/>
