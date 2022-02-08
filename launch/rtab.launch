@@ -33,6 +33,14 @@
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
        <arg name="align_depth" value="true"/>
        <!-- <arg name="filters" value="pointcloud"/> -->
+
+       <arg name="depth_width"         default="800"/>
+       <arg name="depth_height"        default="600"/>
+       <arg name="depth_fps"           default="15"/>
+
+       <arg name="color_width"         default="800"/>
+       <arg name="color_height"        default="600"/>
+       <arg name="color_fps"           default="15"/>
     </include>
 
     <rosparam>
