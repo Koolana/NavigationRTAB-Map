@@ -8,7 +8,7 @@ global_costmap:
 
   update_frequency: 10.0
   publish_frequency: 10.0
-  transform_tolerance: 0.3
+  transform_tolerance: 1.0
 
   cost_scaling_factor: 3.0
 
