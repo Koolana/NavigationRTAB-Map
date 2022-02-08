@@ -7,7 +7,7 @@
   <arg name="odomV" default="true"/>
   <arg name="odomW" default="false"/>
 
-  <arg name="mappingWithLidar" default="true"/>
+  <arg name="mappingWithLidar" default="false"/>
 
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
@@ -32,7 +32,7 @@
 
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
        <arg name="align_depth" value="true"/>
-       <arg name="filters" value="pointcloud"/>
+       <!-- <arg name="filters" value="pointcloud"/> -->
     </include>
 
     <rosparam>
@@ -64,7 +64,7 @@
     <!-- Synchronize the data from stereo camera -->
     <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
       <remap from="rgb/image"         to="/camera/color/image_raw"/>
-      <remap from="depth/image"       to="/camera/aligned_depth_to_color/image_raw"/>
+      <remap from="depth/image"       to="/camera/depth/image_rect_raw"/>
       <remap from="rgb/camera_info"   to="/camera/color/camera_info"/>
 
       <param name="approx_sync" type="bool" value="true"/>
@@ -227,19 +227,19 @@
     </node>
 
     <!-- Map fusion (not working), в данный момент настроен на вывод карты от лидара в топике /map_assembler/grid_map -->
-    <node name="map_assembler" pkg="rtabmap_ros" type="map_assembler">
+    <!-- <node name="map_assembler" pkg="rtabmap_ros" type="map_assembler">
        <param name="Grid/CellSize" type="double" value="0.1"/>
 
        <param name="Grid/FromDepth" type="string" value="false"/>
 
        <param name="regenerate_local_grids" value="true"/>
-    </node>
+    </node> -->
 
     <!-- Create point cloud for the local planner -->
     <node pkg="nodelet" type="nodelet" name="stereo_nodelet"  args="manager"/>
 
     <node pkg="nodelet" type="nodelet" name="points_xyz" args="standalone rtabmap_ros/point_cloud_xyz">
-       <remap from="depth/image"         to="/camera/aligned_depth_to_color/image_raw"/>
+       <remap from="depth/image"         to="/camera/depth/image_rect_raw"/>
        <remap from="depth/camera_info"   to="/camera/color/camera_info"/>
        <remap from="cloud"               to="voxel_cloud" />
 
@@ -259,7 +259,7 @@
      </node>
 
     <!-- rtabmapviz -->
-    <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen" if="$(arg isVisual)">
+    <!-- <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen" if="$(arg isVisual)">
       <param name="subscribe_scan"   type="bool"   value="$(arg odomL)"/>
       <param name="subscribe_odom"   type="bool"   value="true"/>
       <param name="frame_id"         type="string" value="base_footprint"/>
@@ -268,7 +268,7 @@
       <remap from="odom" to="/rgbd_odometry" if="$(arg odomV)"/>
       <remap from="odom" to="/icp_odometry" if="$(arg odomL)"/>
       <remap from="odom" to="/wheel_odometry" if="$(arg odomW)"/>
-    </node>
+    </node> -->
   </group>
 
   <!-- move_base -->
