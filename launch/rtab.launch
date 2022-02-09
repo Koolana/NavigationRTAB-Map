@@ -31,16 +31,18 @@
     </node>
 
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
-       <arg name="align_depth" value="true"/>
+       <!-- <arg name="align_depth" value="true"/> -->
        <!-- <arg name="filters" value="pointcloud"/> -->
 
-       <arg name="depth_width"         default="800"/>
-       <arg name="depth_height"        default="600"/>
-       <arg name="depth_fps"           default="15"/>
+       <arg name="align_depth" value="true" />
 
-       <arg name="color_width"         default="800"/>
-       <arg name="color_height"        default="600"/>
-       <arg name="color_fps"           default="15"/>
+       <arg name="color_width" value="640" />
+       <arg name="color_height" value="480" />
+       <arg name="color_fps" value="30" />
+
+       <arg name="depth_width" value="640" />
+       <arg name="depth_height" value="480" />
+       <arg name="depth_fps" value="30" />
     </include>
 
     <rosparam>
@@ -89,8 +91,8 @@
        <param name="odom_frame_id" type="string" value="odom"/>
        <param name="publish_tf" value="true"/>
 
-       <!-- Сброс одного кадра после потери -->
-       <param name="Odom/ResetCountdown" value="1" />
+       <!-- Сброс одометрии посли потери 10 кадров -->
+       <param name="Odom/ResetCountdown" value="10" />
 
        <!-- Ограничем количество оцениваемых значений одометрии
        так как робот двигается только по плоской поверхности (x, y, theta)-->
