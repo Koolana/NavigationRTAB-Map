@@ -3,8 +3,8 @@
   <arg name="isVisual" default="false"/>
   <arg name="explore" default="false"/>
 
-  <arg name="odomL" default="true"/>
-  <arg name="odomV" default="true"/>
+  <arg name="odomL" default="false"/>
+  <arg name="odomV" default="false"/>
   <arg name="odomW" default="true"/>
 
   <arg name="mappingWithLidar" default="true"/>
@@ -31,8 +31,15 @@
     </node>
 
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
-       <arg name="align_depth" value="true"/>
-       <arg name="filters" value="pointcloud"/>
+      <arg name="align_depth" value="true" />
+
+      <arg name="color_width" value="640" />
+      <arg name="color_height" value="480" />
+      <arg name="color_fps" value="30" />
+
+      <arg name="depth_width" value="640" />
+      <arg name="depth_height" value="480" />
+      <arg name="depth_fps" value="30" />
     </include>
 
     <rosparam>
@@ -82,7 +89,7 @@
        <param name="publish_tf" value="false"/>
 
        <!-- Сброс одного кадра после потери -->
-       <param name="Odom/ResetCountdown" value="1" />
+       <param name="Odom/ResetCountdown" value="10" />
 
        <!-- Ограничем количество оцениваемых значений одометрии
        так как робот двигается только по плоской поверхности (x, y, theta)-->
@@ -226,13 +233,13 @@
     </node>
 
     <!-- Map fusion (not working), в данный момент настроен на вывод карты от лидара в топике /map_assembler/grid_map -->
-    <node name="map_assembler" pkg="rtabmap_ros" type="map_assembler">
+    <!-- <node name="map_assembler" pkg="rtabmap_ros" type="map_assembler">
        <param name="Grid/CellSize" type="double" value="0.1"/>
 
        <param name="Grid/FromDepth" type="string" value="false"/>
 
        <param name="regenerate_local_grids" value="true"/>
-    </node>
+    </node> -->
 
     <!-- Create point cloud for the local planner -->
     <node pkg="nodelet" type="nodelet" name="stereo_nodelet"  args="manager"/>
