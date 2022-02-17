@@ -7,7 +7,7 @@
   <arg name="odomV" default="false"/>
   <arg name="odomW" default="true"/>
 
-  <arg name="mappingWithLidar" default="true"/>
+  <arg name="mappingWithLidar" default="false"/>
 
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
   <arg name="gridFromCamera" default="true"/>
