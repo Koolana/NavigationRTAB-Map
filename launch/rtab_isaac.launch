@@ -13,12 +13,12 @@
   <arg name="gridFromCamera" default="false"/>
 
   <group unless="$(arg useGazebo)">
-    <!-- <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
+    <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
       <param name="port" type="string" value="/dev/ttyACM0"/>
       <param name="baud" type="int" value="57600"/>
 
       <remap from="odom" to="/wheel_odometry"/>
-    </node> -->
+    </node>
 
     <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen" if="$(eval arg('mappingWithLidar') or arg('odomL'))">
       <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>
