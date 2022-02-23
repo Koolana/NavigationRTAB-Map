@@ -10,7 +10,7 @@
   <arg name="mappingWithLidar" default="false"/>
 
   <!-- Occupancy grid:true - from RGBD camera, false - from lidar-->
-  <arg name="gridFromCamera" default="true"/>
+  <arg name="gridFromCamera" default="false"/>
 
   <group unless="$(arg useGazebo)">
     <!-- <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
@@ -64,27 +64,28 @@
     </node>
   </group>
 
-  <!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
-    <rosparam command="load" file="$(find stereo_nav)/config/robot_localization/ekf_template.yaml" />
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+    <rosparam command="load" file="$(find stereo_nav)/config/robot_localization/pose_to_odom.yaml" />
 
     <remap from="odometry/filtered" to="/odom_merge"/>
     <remap from="accel/filtered" to="/accel_merge"/>
-  </node> -->
+  </node>
+
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
     <remap from="cloud_in" to="/point_cloud_all"/>
     <remap from="scan" to="/scan" />
     <rosparam>
-      target_frame: world
+      target_frame: camera_link
       transform_tolerance: 0.01
-      min_height: 0.0
-      max_height: 1.0
+      min_height: -2.0
+      max_height: 2.0
 
       angle_min: -1.5708
       angle_max: 1.5708
-      angle_increment: 0.0087
+      angle_increment: 0.005
       scan_time: 0.3333
       range_min: 0.45
-      range_max: 4.0
+      range_max: 8.0
       use_inf: true
 
       #concurrency_level affects number of pc queued for processing and the number of threadsused
@@ -111,7 +112,7 @@
       <param name="use_action_for_goal" type="bool" value="true"/>
       <remap from="move_base" to="/move_base"/>
 
-      <remap from="odom" to="/posestamped"/>
+      <remap from="odom" to="/odom_merge"/>
 
       <remap from="scan" to="/scan"/>
 
@@ -146,7 +147,7 @@
       <param name="RGBD/OptimizeMaxError" type="string" value="5.0"/>
 
       <!-- Wait loop closure and dont star building new map -->
-      <param name="Rtabmap/StartNewMapOnLoopClosure" value="true"/>
+      <param name="Rtabmap/StartNewMapOnLoopClosure" value="false"/>
 
       <!-- RTAB-Map's parameters -->
       <param name="Reg/Strategy" type="string" value="1"/>
