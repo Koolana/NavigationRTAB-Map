@@ -1,0 +1,22 @@
+<launch>
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="enable_depth"        default="false"/>
+
+    <arg name="infra_width"         default="1280"/>
+    <arg name="infra_height"        default="720"/>
+    <arg name="enable_infra"        default="true"/>
+    <arg name="enable_infra1"       default="true"/>
+    <arg name="enable_infra2"       default="true"/>
+
+    <arg name="enable_confidence"   default="false"/>
+
+    <arg name="enable_color"        default="false"/>
+  </include>
+
+  <rosparam>
+    /camera/stereo_module/emitter_enabled: 0
+    /camera/stereo_module enable_auto_exposure: False
+    /camera/stereo_module exposure: 18500
+    /camera/stereo_module gain: 100
+  </rosparam>
+</launch>
