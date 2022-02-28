@@ -247,7 +247,7 @@
     <remap from="cmd_vel" to="/cmd_vel"/>
     <remap from="map" to="/map"/>
 
-    <remap from="odom" to="/posestamped"/>
+    <remap from="odom" to="/odom_merge"/>
   </node>
 
   <!-- explore -->
