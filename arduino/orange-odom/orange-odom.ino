@@ -46,7 +46,7 @@ void printValue(double val, const char* namVal = NULL, bool withSignAndDouble = 
 
 Motor::MotorPins motorPinsR = {MotorRdir, MotorRpwm};
 Motor::MotorPins motorPinsL = {MotorLdir, MotorLpwm};
-Motor::PIDcoefs pid = {1, 5, 0};
+Motor::PIDcoefs pid = {0.005, 7, 0.005};
 Motor::MotorParams params = {maxSpeed, R, PPR};
 
 ros::NodeHandle nh;
