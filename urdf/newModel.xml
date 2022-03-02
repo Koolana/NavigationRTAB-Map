@@ -8,7 +8,7 @@
       <odometrySource>world</odometrySource>
 
       <publishOdomTF>false</publishOdomTF>
-      
+
       <robotBaseFrame>base_footprint</robotBaseFrame>
       <publishWheelTF>false</publishWheelTF>
       <publishTf>true</publishTf>
