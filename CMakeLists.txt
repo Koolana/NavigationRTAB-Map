@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  ecl_threads
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -207,3 +209,6 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(merge_odom src/merge_odom/merge_odom.cpp)
+target_link_libraries(merge_odom ${catkin_LIBRARIES})

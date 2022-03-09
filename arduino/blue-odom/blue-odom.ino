@@ -21,7 +21,7 @@ const byte encoderLpinA = 3;                              //A pin -> the interru
 const byte encoderLpinB = 16;                              //B pin -> the digital pin (17)
 
 // Timer variables
-const double rate = 10;  // Hz
+const double rate = 100;  // Hz
 const double dT = (1 / rate);  // 100 ms = 10 times per sec - Timer interrupt interval
 const long Timer1Interval = long(dT * 1000000);  // период счета
 
@@ -72,7 +72,7 @@ void loop() {
   motorR.update();
   motorL.update();
 
-  if (abs(micros() - prevTimeMicros) > (1/rate) * 1000000) {
+  if (abs(micros() - prevTimeMicros) > Timer1Interval) {
     odometer.update(motorL.getVelocity(), motorR.getVelocity());
     odometer.publish(nh.now());
 

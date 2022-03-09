@@ -120,7 +120,7 @@
       <remap from="move_base" to="/move_base"/>
 
       <!-- Считывание данных одометрии напрямую из топика -->
-      <!-- <remap from="odom" to="/odom_merge"/> -->
+      <remap from="odom" to="/merge_odom"/>
 
       <remap from="scan" to="/scan"/>
 
@@ -133,11 +133,11 @@
 
       <!-- Считывание напрямую из дерева преобразований -->
       <!-- adjust to actual odometry frame id -->
-      <param name="odom_frame_id" value="odom"/>
+      <!-- <param name="odom_frame_id" value="odom"/> -->
       <!-- adjust depending on real odom error -->
-      <param name="odom_tf_linear_variance" value="0.01"/>
+      <!-- <param name="odom_tf_linear_variance" value="0.01"/> -->
       <!-- adjust depending on real odom error -->
-      <param name="odom_tf_angular_variance" value="0.05"/>
+      <!-- <param name="odom_tf_angular_variance" value="0.05"/> -->
 
       <!-- Фильтрация облаков точек -->
       <!-- <param name="cloud_noise_filtering_radius" value="0.05"/> -->
