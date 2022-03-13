@@ -72,7 +72,7 @@ void loop() {
   motorR.update();
   motorL.update();
 
-  if (abs(micros() - prevTimeMicros) > (1/rate) * 1000000) {
+  if (abs(micros() - prevTimeMicros) > Timer1Interval) {
     odometer.update(motorL.getVelocity(), motorR.getVelocity());
     odometer.publish(nh.now());
 

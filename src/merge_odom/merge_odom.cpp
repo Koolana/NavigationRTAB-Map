@@ -59,10 +59,10 @@ void mergeOdoms(nav_msgs::Odometry& output_odom) {
     transform.setOrigin(tf::Vector3(output_odom.pose.pose.position.x,
                                     output_odom.pose.pose.position.y,
                                     output_odom.pose.pose.position.z));
-    tf::Quaternion q;
-    q.setRPY(output_odom.pose.pose.orientation.x,
-             output_odom.pose.pose.orientation.y,
-             output_odom.pose.pose.orientation.z);
+    tf::Quaternion q(output_odom.pose.pose.orientation.x,
+                   output_odom.pose.pose.orientation.y,
+                   output_odom.pose.pose.orientation.z,
+                   output_odom.pose.pose.orientation.w);
 
     transform.setRotation(q);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), odom, base_link));
