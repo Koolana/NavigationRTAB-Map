@@ -14,7 +14,7 @@ Motor::Motor(const Motor::MotorPins& mp, const Motor::PIDcoefs& pid, const Motor
   this->PIDcontroller = new PID(&this->realSpeedPID, &this->outputSpeedPID, &this->targetSpeedPID,
               pid.P, pid.I, pid.D, DIRECT);
   this->PIDcontroller->SetMode(AUTOMATIC);
-  this->PIDcontroller->SetOutputLimits(0,255);
+  this->PIDcontroller->SetOutputLimits(-this->motorParams.maxSpeed, this->motorParams.maxSpeed);
   this->PIDcontroller->SetSampleTime(50);
 }
 
@@ -24,17 +24,17 @@ void Motor::update() {
     this->isMoving = false;
   }
 
-  this->targetSpeedPID = this->targetSpeed * 255 / this->motorParams.maxSpeed;  // уставка скорости
-  this->realSpeedPID = this->realSpeed * 255 / this->motorParams.maxSpeed;  // обратная связь ПИД-регулятора, м/сек
+  this->targetSpeedPID = this->targetSpeed;  // уставка скорости
+  this->realSpeedPID = (this->outputSpeedPID > 0 ? 1 : -1) * this->realSpeed;  // обратная связь ПИД-регулятора, м/сек
 
   this->PIDcontroller->Compute();
 
-  if (abs(this->targetSpeed) < 0.01) {
+  if (abs(this->targetSpeed) < 0.03  && abs(this->outputSpeedPID) < 0.03) {
     analogWrite(this->motorPins.pinPWM, 0);
   } else {
-    analogWrite(this->motorPins.pinPWM, this->outputSpeedPID > 13 ? this->outputSpeedPID : 0);
+    analogWrite(this->motorPins.pinPWM,  abs(this->outputSpeedPID) * 255 / this->motorParams.maxSpeed);
   }
-  digitalWrite(this->motorPins.pinDir, !this->isForward);
+  digitalWrite(this->motorPins.pinDir, !(this->outputSpeedPID > 0));
 }
 
 void Motor::handleInterruptEncoder() {
@@ -49,7 +49,7 @@ void Motor::handleInterruptEncoder() {
 }
 
 void Motor::setVelocity(double speed) {
-  this->targetSpeed = abs(speed);
+  this->targetSpeed = speed;
   this->isForward = speed > 0;
 }
 
