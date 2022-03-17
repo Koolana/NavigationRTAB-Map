@@ -24,9 +24,9 @@ const byte encoderLpinA = ENCODER_L_A;                              //A pin -> t
 const byte encoderLpinB = ENCODER_L_B;                              //B pin -> the digital pin (17)
 
 // Timer variables
-const double rate = 1;  // Hz
+const double rate = 100;  // Hz
 const double dT = (1 / rate);  // 100 ms = 10 times per sec - Timer interrupt interval
-const long Timer1Interval = long(dT * 1000000);  // период счета
+const unsigned long Timer1Interval = long(dT * 1000000);  // период счета
 
 //Motor control variables
 const int MotorRdir = MOTOR_R_DIR;  // 4  //Right motor Direction Control pin
@@ -43,7 +43,7 @@ double maxSpeed = MAX_SPEED;  // максимальная линейная ск�
 // double CL = 1;  // 0.939809;  // корректирующие коеффициенты для радиусов колес
 // double CR = 1;  // 1.06019;
 
-unsigned int prevTimeMicros = 0;
+unsigned long prevTimeMicros = 0;
 
 void printValue(double val, const char* namVal = NULL, bool withSignAndDouble = true);
 
@@ -93,14 +93,6 @@ void loop() {
   if (abs(LinearVelocity)  < 0.001) LinearVelocity  = 0.0;
   if (abs(AngularVelocity) < 0.001) AngularVelocity = 0.0;
 
-  double SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R))*R;   //M/S - линейная скорость колеса
-  motorR.setVelocity(SetSpeedR);
-
-  double SetSpeedL = (((2*LinearVelocity)-(AngularVelocity*L))/(2*R))*R;
-  motorL.setVelocity(SetSpeedL);
-}
-
-void SetSpeed(double LinearVelocity, double AngularVelocity) {
   double SetSpeedR = (((2*LinearVelocity)+(AngularVelocity*L))/(2*R))*R;   //M/S - линейная скорость колеса
   motorR.setVelocity(SetSpeedR);
 
