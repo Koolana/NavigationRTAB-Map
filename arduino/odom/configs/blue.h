@@ -21,4 +21,4 @@
 #define CL 1
 #define CR 1
 
-#define SERIAL Serial
+#define SERIAL_TYPE Serial1

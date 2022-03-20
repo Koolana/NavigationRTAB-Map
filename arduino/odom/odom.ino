@@ -24,7 +24,7 @@ const byte encoderLpinA = ENCODER_L_A;                              //A pin -> t
 const byte encoderLpinB = ENCODER_L_B;                              //B pin -> the digital pin (17)
 
 // Timer variables
-const double rate = 100;  // Hz
+const double rate = 10;  // Hz
 const double dT = (1 / rate);  // 100 ms = 10 times per sec - Timer interrupt interval
 const unsigned long Timer1Interval = long(dT * 1000000);  // период счета
 
@@ -57,7 +57,7 @@ ros::NodeHandle nh;
 Motor motorR(motorPinsR, pid, params);
 Motor motorL(motorPinsL, pid, params);
 
-Odometer odometer(L, dT);
+Odometer odometer(L /*, dT */);
 
 void cmd_velCallback(const geometry_msgs::Twist& toggle_msg);
 ros::Subscriber<geometry_msgs::Twist> sub_cmd_vel("cmd_vel", &cmd_velCallback);
