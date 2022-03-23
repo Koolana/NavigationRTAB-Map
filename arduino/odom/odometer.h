@@ -15,6 +15,7 @@ class Odometer {
 
     void setupPublisher(ros::NodeHandle &nh);
     void update(const float velocityLeft, const float velocityRight);
+    void updateByWDistance(const double distLeft, const double distRight);
     void publish(ros::Time current_time);
 
   private:

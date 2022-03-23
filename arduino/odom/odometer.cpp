@@ -1,8 +1,8 @@
 #include "odometer.h"
 
 const char base_link[] = "base_footprint";
-const char frame_name[] = "pose_wheel";
-const char topic_name[] = "pose_wheel";
+const char frame_name[] = "wheel_pose";
+const char topic_name[] = "/wheel_pose";
 // const char frame_name[] = "odom";
 
 Odometer::Odometer(const double baseWidth /*, const double dT */) {
@@ -34,6 +34,30 @@ void Odometer::update(const float velocityLeft, const float velocityRight) {
   this->y += V*sin(this->yaw) * dT;
 }
 
+void Odometer::updateByWDistance(const double distLeft, const double distRight) {
+  // double radiusRotate = ((distRight - distLeft) < 0.001 ? 0.0 : distLeft * this->baseWidth / (distRight - distLeft));
+  //
+  // this->yaw += (radiusRotate < 0.001 ? 0.0 : distLeft / (2 * 3.14 * radiusRotate));
+  // if (this->yaw > PI) {yaw = yaw - 2 * PI;}
+  // if (this->yaw < -PI) {yaw = yaw + 2 * PI;}
+  // this->x += (radiusRotate + this->baseWidth / 2) * sin(this->yaw);
+  // this->y += (radiusRotate + this->baseWidth / 2) * (1 - cos(this->yaw));
+
+  // направление робота и новые координаты
+  // this->yaw += ((0.068 + 0.068)/ (2 * this->baseWidth))*(distRight/0.068 - distLeft/0.068);
+  // if (this->yaw > PI) {yaw = yaw - 2 * PI;}
+  // if (this->yaw < -PI) {yaw = yaw + 2 * PI;}
+  // this->x += ((0.068 + 0.068)/4)*(distRight/0.068 + distLeft/0.068) * cos(this->yaw);
+  // this->y += ((0.068 + 0.068)/4)*(distRight/0.068 + distLeft/0.068) * sin(this->yaw);
+
+  this->yaw = (1 / this->baseWidth) * (distRight - distLeft);
+  if (this->yaw > PI) {yaw = yaw - 2 * PI;}
+  if (this->yaw < -PI) {yaw = yaw + 2 * PI;}
+  this->x = 0.5 * (distRight + distLeft) * cos(this->yaw);
+  this->y = 0.5 * (distRight + distLeft) * sin(this->yaw);
+}
+
+// Rename type this->odomMsg geometry_msgs::PoseStamped to geometry_msgs/Twist
 void Odometer::publish(ros::Time current_time) {
   this->odomMsg->header.stamp     = current_time;
   this->odomMsg->header.frame_id  = frame_name;

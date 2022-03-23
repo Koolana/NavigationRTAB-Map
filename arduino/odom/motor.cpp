@@ -34,6 +34,7 @@ void Motor::update() {
   } else {
     analogWrite(this->motorPins.pinPWM,  abs(this->outputSpeedPID) * 255 / this->motorParams.maxSpeed);
   }
+
   digitalWrite(this->motorPins.pinDir, !(this->outputSpeedPID > 0));
 }
 
@@ -45,6 +46,8 @@ void Motor::handleInterruptEncoder() {
     this->isMoving = true;
   }
 
+  this->numPulse++;
+
   this->timeLastInterrupt = micros();
 }
 
@@ -55,4 +58,10 @@ void Motor::setVelocity(double speed) {
 
 double Motor::getVelocity() {
   return (this->isForward ? 1 : -1) * this->realSpeed;
+}
+
+double Motor::getMovedDistance() {
+  unsigned long currentPuslses = this->numPulse;
+  this->numPulse = 0;
+  return (this->outputSpeedPID > 0 ? 1 : -1) * (2 * 3.14 * this->motorParams.wheelRadius / this->motorParams.PPR) * currentPuslses * this->motorParams.corrFactor;
 }

@@ -21,6 +21,7 @@ class Motor {
     struct MotorParams {
       double maxSpeed;
       double wheelRadius;
+      double corrFactor;
       unsigned int PPR;
     };
 
@@ -31,6 +32,7 @@ class Motor {
 
     double getVelocity();
     void setVelocity(double speed);
+    double getMovedDistance();
 
   private:
     Motor::MotorPins motorPins;
@@ -49,6 +51,8 @@ class Motor {
     double targetSpeedPID = 0;  // speed for PID
     double realSpeedPID = 0;  // speed for PID
     double outputSpeedPID = 0;  // speed for PID
+
+    unsigned long numPulse = 0;
 };
 
 #endif  /* MOTOR_H */
