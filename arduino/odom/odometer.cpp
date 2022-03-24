@@ -50,9 +50,10 @@ void Odometer::updateByWDistance(const double distLeft, const double distRight) 
   // this->x += ((0.068 + 0.068)/4)*(distRight/0.068 + distLeft/0.068) * cos(this->yaw);
   // this->y += ((0.068 + 0.068)/4)*(distRight/0.068 + distLeft/0.068) * sin(this->yaw);
 
-  this->yaw = (1 / this->baseWidth) * (distRight - distLeft);
-  if (this->yaw > PI) {yaw = yaw - 2 * PI;}
-  if (this->yaw < -PI) {yaw = yaw + 2 * PI;}
+  this->yaw = atan2(distRight - distLeft, this->baseWidth);
+  // this->yaw += (1 / this->baseWidth) * (distRight - distLeft);
+  // if (this->yaw > PI) {yaw = yaw - 2 * PI;}
+  // if (this->yaw < -PI) {yaw = yaw + 2 * PI;}
   this->x = 0.5 * (distRight + distLeft) * cos(this->yaw);
   this->y = 0.5 * (distRight + distLeft) * sin(this->yaw);
 }

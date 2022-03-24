@@ -14,8 +14,10 @@
 #include "motor.h"
 #include "odometer.h"
 
-#include "configs/blue.h"
-// #include "configs/orange.h"
+// #include "configs/blue.h"
+#include "configs/orange.h"
+
+#include <std_msgs/Empty.h>
 
 //Encoder variables
 const byte encoderRpinA = ENCODER_R_A;                              //A pin -> the interrupt pin (2)
@@ -61,8 +63,8 @@ Odometer odometer(L /*, dT */);
 void cmd_velCallback(const geometry_msgs::Twist& toggle_msg);
 ros::Subscriber<geometry_msgs::Twist> sub_cmd_vel("/cmd_vel", &cmd_velCallback);
 
-void update_poseCallback(const geometry_msgs::PoseStamped& new_pose);
-ros::Subscriber<geometry_msgs::PoseStamped> sub_update_pose("/updated_pose", &update_poseCallback);
+void update_poseCallback(const std_msgs::Empty& empty_msg);
+ros::Subscriber<std_msgs::Empty> sub_update_pose("/updated_pose", &update_poseCallback);
 
 void setup() {
   nh.initNode();
@@ -78,12 +80,12 @@ void loop() {
   motorR.update();
   motorL.update();
 
-  if (abs(micros() - prevTimeMicros) > Timer1Interval) {
-    odometer.updateByWDistance(motorL.getMovedDistance(), motorR.getMovedDistance());
-    odometer.publish(nh.now());
-
-    prevTimeMicros = micros();
-  }
+  // if (abs(micros() - prevTimeMicros) > Timer1Interval) {
+  //   odometer.updateByWDistance(motorL.getMovedDistance(), motorR.getMovedDistance());
+  //   odometer.publish(nh.now());
+  //
+  //   prevTimeMicros = micros();
+  // }
 
   nh.spinOnce();
   delay(1);
@@ -103,7 +105,7 @@ void cmd_velCallback(const geometry_msgs::Twist& twist_msg) {
   motorL.setVelocity(SetSpeedL);
 }
 
-void update_poseCallback(const geometry_msgs::PoseStamped& new_pose) {
+void update_poseCallback(const std_msgs::Empty& empty_msg) {
   odometer.updateByWDistance(motorL.getMovedDistance(), motorR.getMovedDistance());
   odometer.publish(nh.now());
 }

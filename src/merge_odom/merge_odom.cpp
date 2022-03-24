@@ -2,8 +2,10 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Empty.h>
 #include <ecl/threads.hpp>
 #include <tf/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 const char base_link[] = "base_footprint";
 const char odom[] = "odom";
@@ -12,24 +14,56 @@ bool publish_tf = true;
 geometry_msgs::PoseWithCovarianceStamped shared_elbrus_pose;
 geometry_msgs::PoseStamped shared_wheel_pose;
 
+nav_msgs::Odometry output_odom;
+
 ecl::Mutex mutex_elbrus;
 ecl::Mutex mutex_wheel;
-
-bool wheelPoseUpdated = true;
 
 void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov) {
   mutex_elbrus.lock();
   shared_elbrus_pose = pose_cov;
   mutex_elbrus.unlock();
 
-  // ROS_INFO("Elbrus msg");
+  output_odom.header.stamp = ros::Time::now();
+
+  output_odom.pose.pose.position.x  = shared_elbrus_pose.pose.pose.position.x;  // _cur_x;
+  output_odom.pose.pose.position.y  = shared_elbrus_pose.pose.pose.position.y;  // _cur_y;
+  output_odom.pose.pose.position.z  = shared_elbrus_pose.pose.pose.position.z;
+
+  output_odom.pose.pose.orientation.x = shared_elbrus_pose.pose.pose.orientation.x;
+  output_odom.pose.pose.orientation.y = shared_elbrus_pose.pose.pose.orientation.y;
+  output_odom.pose.pose.orientation.z = shared_elbrus_pose.pose.pose.orientation.z;
+  output_odom.pose.pose.orientation.w = shared_elbrus_pose.pose.pose.orientation.w;
+
+  ROS_INFO("Elbrus msg");
 }
 
 void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
   mutex_wheel.lock();
   shared_wheel_pose = pose;
-  wheelPoseUpdated = true;
   mutex_wheel.unlock();
+
+  output_odom.header.stamp = ros::Time::now();
+
+  tf2::Quaternion quat_tf_output, quat_tf_input, quat_tf_new;
+
+  tf2::convert(output_odom.pose.pose.orientation, quat_tf_output);
+  tf2::convert(shared_wheel_pose.pose.orientation, quat_tf_input);
+
+  quat_tf_new = quat_tf_output * quat_tf_input;
+  quat_tf_new.normalize();
+
+  tf2::convert(quat_tf_new, output_odom.pose.pose.orientation);
+
+  tf2::Vector3 translateVector(shared_wheel_pose.pose.position.x,
+                               shared_wheel_pose.pose.position.y,
+                               shared_wheel_pose.pose.position.z);
+
+  translateVector = tf2::quatRotate(quat_tf_output, translateVector);
+
+  output_odom.pose.pose.position.x  += translateVector.x();  // _cur_x;
+  output_odom.pose.pose.position.y  += translateVector.y();  // _cur_y;
+  output_odom.pose.pose.position.z  += translateVector.z();
 
   ROS_INFO("Wheel msg");
 }
@@ -64,22 +98,6 @@ void mergeOdoms(nav_msgs::Odometry& output_odom) {
 
   mutex_elbrus.unlock();
   mutex_wheel.unlock();
-
-  if (publish_tf) {
-    static tf::TransformBroadcaster br;
-    tf::Transform transform;
-    transform.setOrigin(tf::Vector3(output_odom.pose.pose.position.x,
-                                    output_odom.pose.pose.position.y,
-                                    output_odom.pose.pose.position.z));
-    tf::Quaternion q(output_odom.pose.pose.orientation.x,
-                   output_odom.pose.pose.orientation.y,
-                   output_odom.pose.pose.orientation.z,
-                   output_odom.pose.pose.orientation.w);
-
-    transform.setRotation(q);
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), odom, base_link));
-    // ROS_INFO("Merged!");
-  }
 }
 
 int main(int argc, char **argv) {
@@ -87,36 +105,40 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
 
   ros::Publisher merge_odom_pub = n.advertise<nav_msgs::Odometry>("/merge_odom", 10);
-  ros::Publisher update_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/updated_pose", 1);
+  ros::Publisher update_w_odom_pub = n.advertise<std_msgs::Empty>("/updated_pose", 10);
 
   ros::Subscriber elbrus_sub = n.subscribe("/elbrus_pose_cov", 10, elbrusPoseCallback);
-  ros::Subscriber wheel_sub = n.subscribe("/wheel_pose", 1, wheelOdomCallback);
+  ros::Subscriber wheel_sub = n.subscribe("/wheel_pose", 10, wheelOdomCallback);
+
+  output_odom.header.frame_id = odom;
+  output_odom.child_frame_id  = base_link;
+  output_odom.pose.pose.orientation.w = 1;
 
   ros::Rate loop_rate(30);
 
   while (ros::ok())
   {
-    nav_msgs::Odometry output_odom;
-    mergeOdoms(output_odom);
+    // nav_msgs::Odometry output_odom;
+    // mergeOdoms(output_odom);
     merge_odom_pub.publish(output_odom);
 
-    // if (wheelPoseUpdated) {
-      wheelPoseUpdated = false;
+    if (publish_tf) {
+      static tf::TransformBroadcaster br;
+      tf::Transform transform;
+      transform.setOrigin(tf::Vector3(output_odom.pose.pose.position.x,
+                                      output_odom.pose.pose.position.y,
+                                      output_odom.pose.pose.position.z));
+      tf::Quaternion q(output_odom.pose.pose.orientation.x,
+                     output_odom.pose.pose.orientation.y,
+                     output_odom.pose.pose.orientation.z,
+                     output_odom.pose.pose.orientation.w);
 
-      geometry_msgs::PoseStamped newPose;
-      newPose.header.stamp     = ros::Time::now();
-      newPose.header.frame_id  = "wheel_pose";
+      transform.setRotation(q);
+      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), odom, base_link));
+    }
 
-      newPose.pose.position.x  = output_odom.pose.pose.position.x;  // _cur_x;
-      newPose.pose.position.y  = output_odom.pose.pose.position.y;  // _cur_y;
-      newPose.pose.position.z  = output_odom.pose.pose.position.z;
-      newPose.pose.orientation.x = output_odom.pose.pose.orientation.x;
-      newPose.pose.orientation.y = output_odom.pose.pose.orientation.y;
-      newPose.pose.orientation.z = output_odom.pose.pose.orientation.z;
-      newPose.pose.orientation.w = output_odom.pose.pose.orientation.w;
-
-      update_pose_pub.publish(newPose);
-    // }
+    std_msgs::Empty updateWOdomMsg;;
+    update_w_odom_pub.publish(updateWOdomMsg);
 
     ros::spinOnce();
     loop_rate.sleep();
