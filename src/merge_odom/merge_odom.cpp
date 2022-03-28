@@ -23,8 +23,8 @@ nav_msgs::Odometry output_odom;
 ecl::Mutex mutex_elbrus;
 ecl::Mutex mutex_wheel;
 
-tf2_ros::Buffer tfBuffer;
-tf2_ros::TransformListener tfListener(tfBuffer);
+tf2_ros::Buffer* tfBuffer;
+tf2_ros::TransformListener* tfListener;
 
 void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov) {
   mutex_elbrus.lock();
@@ -39,7 +39,7 @@ void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov
   mutex_elbrus.unlock();
 
   shared_elbrus_pose.header.frame_id = elbrus_frame;
-  geometry_msgs::PoseStamped transformed_elbrus_pose = tfBuffer.transform(shared_elbrus_pose, "base_footprint");
+  geometry_msgs::PoseStamped transformed_elbrus_pose = tfBuffer->transform(shared_elbrus_pose, "base_footprint");
 
   output_odom.header.stamp = ros::Time::now();
 
@@ -88,6 +88,9 @@ void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "merge_odom");
   ros::NodeHandle n;
+
+  tfBuffer = new tf2_ros::Buffer();
+  tfListener = new tf2_ros::TransformListener(*tfBuffer);
 
   ros::Publisher merge_odom_pub = n.advertise<nav_msgs::Odometry>("/merge_odom", 10);
   ros::Publisher update_w_odom_pub = n.advertise<std_msgs::Empty>("/updated_pose", 10);
