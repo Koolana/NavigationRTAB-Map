@@ -6,12 +6,16 @@
 #include <ecl/threads.hpp>
 #include <tf/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 const char base_link[] = "base_footprint";
 const char odom[] = "odom";
+
+const char elbrus_frame[] = "camera_link";
 bool publish_tf = true;
 
-geometry_msgs::PoseWithCovarianceStamped shared_elbrus_pose;
+geometry_msgs::PoseStamped shared_elbrus_pose;
 geometry_msgs::PoseStamped shared_wheel_pose;
 
 nav_msgs::Odometry output_odom;
@@ -19,21 +23,34 @@ nav_msgs::Odometry output_odom;
 ecl::Mutex mutex_elbrus;
 ecl::Mutex mutex_wheel;
 
+tf2_ros::Buffer tfBuffer;
+tf2_ros::TransformListener tfListener(tfBuffer);
+
 void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov) {
   mutex_elbrus.lock();
-  shared_elbrus_pose = pose_cov;
+  shared_elbrus_pose.pose.position.x  = pose_cov.pose.pose.position.x;  // _cur_x;
+  shared_elbrus_pose.pose.position.y  = pose_cov.pose.pose.position.y;  // _cur_y;
+  shared_elbrus_pose.pose.position.z  = pose_cov.pose.pose.position.z;
+
+  shared_elbrus_pose.pose.orientation.x = pose_cov.pose.pose.orientation.x;
+  shared_elbrus_pose.pose.orientation.y = pose_cov.pose.pose.orientation.y;
+  shared_elbrus_pose.pose.orientation.z = pose_cov.pose.pose.orientation.z;
+  shared_elbrus_pose.pose.orientation.w = pose_cov.pose.pose.orientation.w;
   mutex_elbrus.unlock();
+
+  shared_elbrus_pose.header.frame_id = elbrus_frame;
+  geometry_msgs::PoseStamped transformed_elbrus_pose = tfBuffer.transform(shared_elbrus_pose, "base_footprint");
 
   output_odom.header.stamp = ros::Time::now();
 
-  output_odom.pose.pose.position.x  = shared_elbrus_pose.pose.pose.position.x;  // _cur_x;
-  output_odom.pose.pose.position.y  = shared_elbrus_pose.pose.pose.position.y;  // _cur_y;
-  output_odom.pose.pose.position.z  = shared_elbrus_pose.pose.pose.position.z;
+  output_odom.pose.pose.position.x  = transformed_elbrus_pose.pose.position.x;  // _cur_x;
+  output_odom.pose.pose.position.y  = transformed_elbrus_pose.pose.position.y;  // _cur_y;
+  output_odom.pose.pose.position.z  = transformed_elbrus_pose.pose.position.z;
 
-  output_odom.pose.pose.orientation.x = shared_elbrus_pose.pose.pose.orientation.x;
-  output_odom.pose.pose.orientation.y = shared_elbrus_pose.pose.pose.orientation.y;
-  output_odom.pose.pose.orientation.z = shared_elbrus_pose.pose.pose.orientation.z;
-  output_odom.pose.pose.orientation.w = shared_elbrus_pose.pose.pose.orientation.w;
+  output_odom.pose.pose.orientation.x = transformed_elbrus_pose.pose.orientation.x;
+  output_odom.pose.pose.orientation.y = transformed_elbrus_pose.pose.orientation.y;
+  output_odom.pose.pose.orientation.z = transformed_elbrus_pose.pose.orientation.z;
+  output_odom.pose.pose.orientation.w = transformed_elbrus_pose.pose.orientation.w;
 
   ROS_INFO("Elbrus msg");
 }
@@ -68,38 +85,6 @@ void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
   ROS_INFO("Wheel msg");
 }
 
-void mergeOdoms(nav_msgs::Odometry& output_odom) {
-  mutex_elbrus.lock();
-  mutex_wheel.lock();
-
-  output_odom.header.stamp          = ros::Time::now();
-  output_odom.header.frame_id       = odom;
-  output_odom.child_frame_id        = base_link;
-
-  // output_odom.pose.pose.position.x  = 0.5*shared_elbrus_pose.pose.pose.position.x + 0.5*shared_wheel_pose.pose.pose.position.x;  // _cur_x;
-  // output_odom.pose.pose.position.y  = 0.5*shared_elbrus_pose.pose.pose.position.y + 0.5*shared_wheel_pose.pose.pose.position.y;  // _cur_y;
-  // output_odom.pose.pose.position.z  = 0.5*shared_elbrus_pose.pose.pose.position.z + 0.5*shared_wheel_pose.pose.pose.position.z;
-  // output_odom.pose.pose.orientation.x = 0.5*shared_elbrus_pose.pose.pose.orientation.x + 0.5*shared_wheel_pose.pose.pose.orientation.x;
-  // output_odom.pose.pose.orientation.y = 0.5*shared_elbrus_pose.pose.pose.orientation.y + 0.5*shared_wheel_pose.pose.pose.orientation.y;
-  // output_odom.pose.pose.orientation.z = 0.5*shared_elbrus_pose.pose.pose.orientation.z + 0.5*shared_wheel_pose.pose.pose.orientation.z;
-  // output_odom.pose.pose.orientation.w = 0.5*shared_elbrus_pose.pose.pose.orientation.w + 0.5*shared_wheel_pose.pose.pose.orientation.w; // _cur_theta;
-  //
-  // output_odom.twist.twist.linear.x  = shared_wheel_pose.twist.twist.linear.x;  // vx;
-  // output_odom.twist.twist.linear.y  = shared_wheel_pose.twist.twist.linear.y;
-  // output_odom.twist.twist.angular.z = shared_wheel_pose.twist.twist.angular.z;  // vth;
-
-  output_odom.pose.pose.position.x  = shared_wheel_pose.pose.position.x;  // _cur_x;
-  output_odom.pose.pose.position.y  = shared_wheel_pose.pose.position.y;  // _cur_y;
-  output_odom.pose.pose.position.z  = shared_wheel_pose.pose.position.z;
-  output_odom.pose.pose.orientation.x = shared_wheel_pose.pose.orientation.x;
-  output_odom.pose.pose.orientation.y = shared_wheel_pose.pose.orientation.y;
-  output_odom.pose.pose.orientation.z = shared_wheel_pose.pose.orientation.z;
-  output_odom.pose.pose.orientation.w = shared_wheel_pose.pose.orientation.w; // _cur_theta;
-
-  mutex_elbrus.unlock();
-  mutex_wheel.unlock();
-}
-
 int main(int argc, char **argv) {
   ros::init(argc, argv, "merge_odom");
   ros::NodeHandle n;
@@ -118,8 +103,6 @@ int main(int argc, char **argv) {
 
   while (ros::ok())
   {
-    // nav_msgs::Odometry output_odom;
-    // mergeOdoms(output_odom);
     merge_odom_pub.publish(output_odom);
 
     if (publish_tf) {
