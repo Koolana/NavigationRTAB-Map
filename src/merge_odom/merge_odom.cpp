@@ -8,6 +8,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <cmath>
 
 const char base_link[] = "base_footprint";
 const char odom[] = "odom";
@@ -26,7 +27,14 @@ ecl::Mutex mutex_wheel;
 tf2_ros::Buffer* tfBuffer;
 tf2_ros::TransformListener* tfListener;
 
+ros::Time lastWheelRequest(0);
+double wheelSpan = 0;
+
 void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov) {
+  if (output_odom.twist.twist.angular.z > 0.4) {
+    return;
+  }
+
   mutex_elbrus.lock();
   shared_elbrus_pose.pose.position.x  = pose_cov.pose.pose.position.x;  // _cur_x;
   shared_elbrus_pose.pose.position.y  = pose_cov.pose.pose.position.y;  // _cur_y;
@@ -82,6 +90,11 @@ void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
   output_odom.pose.pose.position.y  += translateVector.y();  // _cur_y;
   output_odom.pose.pose.position.z  += translateVector.z();
 
+  output_odom.twist.twist.linear.x = std::sqrt(std::pow(shared_wheel_pose.pose.position.x, 2) + std::pow(shared_wheel_pose.pose.position.y, 2)) / wheelSpan;
+
+  double yaw_angle = tf::getYaw(pose.pose.orientation);
+  output_odom.twist.twist.angular.z = yaw_angle / wheelSpan;
+
   ROS_INFO("Wheel msg");
 }
 
@@ -123,7 +136,9 @@ int main(int argc, char **argv) {
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), odom, base_link));
     }
 
-    std_msgs::Empty updateWOdomMsg;;
+    std_msgs::Empty updateWOdomMsg;
+    wheelSpan = ros::Time::now().toSec() - lastWheelRequest.toSec();
+    lastWheelRequest = ros::Time::now();
     update_w_odom_pub.publish(updateWOdomMsg);
 
     ros::spinOnce();
