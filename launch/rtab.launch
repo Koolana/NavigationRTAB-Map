@@ -1,11 +1,11 @@
 <launch>
-  <arg name="useGazebo" default="false"/>
-  <arg name="isVisual" default="false"/>
+  <arg name="useGazebo" default="true"/>
+  <arg name="isVisual" default="true"/>
   <arg name="explore" default="false"/>
 
   <arg name="odomL" default="false"/>
-  <arg name="odomV" default="true"/>
-  <arg name="odomW" default="false"/>
+  <arg name="odomV" default="false"/>
+  <arg name="odomW" default="true"/>
 
   <arg name="mappingWithLidar" default="false"/>
 
@@ -30,6 +30,7 @@
       <remap from="scan" to="/scan"/>
     </node>
 
+    <!-- Включен стерео-режим камеры с инфрадатчиков -->
     <include file="$(find realsense2_camera)/launch/rs_camera.launch">
       <arg name="enable_depth"        default="false"/>
 
@@ -70,17 +71,17 @@
   </node>
 
   <group ns="rtabmap">
-    <!-- Synchronize the data from stereo camera -->
-    <!-- <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
+    <!-- Synchronize the data from rgbd camera -->
+    <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
       <remap from="rgb/image"         to="/camera/color/image_raw"/>
-      <remap from="depth/image"       to="/camera/depth/image_rect_raw"/>
+      <remap from="depth/image"       to="/camera/aligned_depth_to_color/image_raw"/>
       <remap from="rgb/camera_info"   to="/camera/color/camera_info"/>
 
       <param name="approx_sync" type="bool" value="true"/>
-    </node> -->
+    </node>
 
-    <!-- RGBD Odometry -->
-    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen">
+    <!-- Stereo Odometry -->
+    <!-- <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen">
         <remap from="left/image_rect"       to="/camera/infra1/image_rect_raw"/>
         <remap from="right/image_rect"      to="/camera/infra2/image_rect_raw"/>
         <remap from="left/camera_info"      to="/camera/infra1/camera_info"/>
@@ -95,6 +96,32 @@
         <param name="Odom/RoiRatios"  type="string" value="0.03 0.03 0.04 0.04"/>
 
         <remap from="odom" to="/rgbd_odometry"/>
+    </node> -->
+
+    <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen" if="$(arg odomV)">
+       <param name="subscribe_rgbd" type="bool" value="true"/>
+       <remap from="odom" to="/rgbd_odometry"/>
+
+       <param name="approx_sync" type="bool" value="true"/>
+
+       <param name="frame_id"      type="string" value="base_footprint"/>
+       <param name="odom_frame_id" type="string" value="odom"/>
+       <param name="publish_tf" value="true"/>
+
+       <!-- Сброс одного кадра после потери -->
+       <param name="Odom/ResetCountdown" value="10" />
+
+       <!-- Ограничем количество оцениваемых значений одометрии
+       так как робот двигается только по плоской поверхности (x, y, theta)-->
+       <param name="Reg/Force3DoF" value="true" />
+
+       <param name="Odom/Strategy"      type="string" value="1"/> <!-- 0=Frame-to-Map, 1=Frame=to=Frame -->
+       <param name="Vis/EstimationType" type="string" value="1"/> <!-- 0=3D->3D 1=3D->2D (PnP) -->
+       <param name="Vis/MaxDepth"       type="string" value="10"/>
+       <param name="Vis/MinInliers"     type="string" value="20"/>
+       <!-- <param name="Odom/FillInfoData"  type="string" value="$(arg rtabmapviz)"/> -->
+       <param name="GFTT/MinDistance"   type="string" value="10"/>
+       <param name="GFTT/QualityLevel"  type="string" value="0.00001"/>
     </node>
 
     <!-- Lidar (ICP) Odometry -->
@@ -139,13 +166,15 @@
       <param name="frame_id"            type="string" value="base_footprint"/>
 
       <param name="subscribe_rgb"   type="bool" value="false"/>
-      <param name="subscribe_stereo" type="bool" value="true"/>
       <param name="subscribe_depth" type="bool" value="false"/>
 
-      <remap from="left/image_rect"       to="/camera/infra1/image_rect_raw"/>
+      <param name="subscribe_rgbd" type="bool" value="true"/>
+
+      <param name="subscribe_stereo" type="bool" value="false"/>
+      <!-- <remap from="left/image_rect"       to="/camera/infra1/image_rect_raw"/>
       <remap from="right/image_rect"      to="/camera/infra2/image_rect_raw"/>
       <remap from="left/camera_info"      to="/camera/infra1/camera_info"/>
-      <remap from="right/camera_info"     to="/camera/infra2/camera_info"/>
+      <remap from="right/camera_info"     to="/camera/infra2/camera_info"/> -->
 
       <param name="subscribe_scan" type="bool" value="$(arg mappingWithLidar)"/>
 
@@ -165,6 +194,7 @@
       <!-- Всегда обновлять карту (даже без движения робота) полезно для динамических сред -->
       <param name="map_always_update" value="false"/>
 
+      <!-- Считывание напрямую из дерева преобразований -->
       <!-- adjust to actual odometry frame id -->
       <!-- <param name="odom_frame_id" value="odom"/> -->
       <!-- adjust depending on real odom error -->
@@ -189,7 +219,7 @@
       <param name="RGBD/OptimizeMaxError" type="string" value="5.0"/>
 
       <!-- Wait loop closure and dont star building new map -->
-      <param name="Rtabmap/StartNewMapOnLoopClosure" value="true"/>
+      <param name="Rtabmap/StartNewMapOnLoopClosure" value="false"/>
 
       <!-- RTAB-Map's parameters -->
       <param name="Reg/Strategy" type="string" value="1"/>

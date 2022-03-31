@@ -77,7 +77,7 @@
       <param name="approx_sync" type="bool" value="true"/>
     </node>
 
-    <!-- Stereo Odometry -->
+    <!-- RGBD Odometry -->
     <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen" if="$(arg odomV)">
        <param name="subscribe_rgbd" type="bool" value="true"/>
        <remap from="odom" to="/rgbd_odometry"/>
