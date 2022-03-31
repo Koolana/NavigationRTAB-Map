@@ -1,5 +1,6 @@
 robot_base_frame: base_footprint
-costmap_topic: rtabmap/map_assembler/grid_map
+costmap_topic: /map
+# costmap_topic: rtabmap/map_assembler/grid_map
 # costmap_topic: map
 # costmap_updates_topic: map_updates
 visualize: true
