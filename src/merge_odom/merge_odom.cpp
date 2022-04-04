@@ -35,46 +35,54 @@ void elbrusPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_cov
     return;
   }
 
+  // Сохранение сообщения geometry_msgs::PoseStamped во временную переменную
   mutex_elbrus.lock();
-  shared_elbrus_pose.pose.position.x  = pose_cov.pose.pose.position.x;  // _cur_x;
-  shared_elbrus_pose.pose.position.y  = pose_cov.pose.pose.position.y;  // _cur_y;
-  shared_elbrus_pose.pose.position.z  = pose_cov.pose.pose.position.z;
-
-  shared_elbrus_pose.pose.orientation.x = pose_cov.pose.pose.orientation.x;
-  shared_elbrus_pose.pose.orientation.y = pose_cov.pose.pose.orientation.y;
-  shared_elbrus_pose.pose.orientation.z = pose_cov.pose.pose.orientation.z;
-  shared_elbrus_pose.pose.orientation.w = pose_cov.pose.pose.orientation.w;
+  // shared_elbrus_pose.pose.position.x  = pose_cov.pose.pose.position.x;  // _cur_x;
+  // shared_elbrus_pose.pose.position.y  = pose_cov.pose.pose.position.y;  // _cur_y;
+  // shared_elbrus_pose.pose.position.z  = pose_cov.pose.pose.position.z;
+  //
+  // shared_elbrus_pose.pose.orientation.x = pose_cov.pose.pose.orientation.x;
+  // shared_elbrus_pose.pose.orientation.y = pose_cov.pose.pose.orientation.y;
+  // shared_elbrus_pose.pose.orientation.z = pose_cov.pose.pose.orientation.z;
+  // shared_elbrus_pose.pose.orientation.w = pose_cov.pose.pose.orientation.w;
+  shared_elbrus_pose.pose = pose_cov.pose.pose;
   mutex_elbrus.unlock();
 
+  // Преобразование одометрии Elbrus в систему координат связанную с центром робота
   shared_elbrus_pose.header.frame_id = elbrus_frame;
   geometry_msgs::PoseStamped transformed_elbrus_pose = tfBuffer->transform(shared_elbrus_pose, "base_footprint");
 
+  // Формирование выходного сообщения nav_msgs::Odometry в буфер
   output_odom.header.stamp = ros::Time::now();
 
-  output_odom.pose.pose.position.x  = transformed_elbrus_pose.pose.position.x;  // _cur_x;
-  output_odom.pose.pose.position.y  = transformed_elbrus_pose.pose.position.y;  // _cur_y;
-  output_odom.pose.pose.position.z  = transformed_elbrus_pose.pose.position.z;
-
-  output_odom.pose.pose.orientation.x = transformed_elbrus_pose.pose.orientation.x;
-  output_odom.pose.pose.orientation.y = transformed_elbrus_pose.pose.orientation.y;
-  output_odom.pose.pose.orientation.z = transformed_elbrus_pose.pose.orientation.z;
-  output_odom.pose.pose.orientation.w = transformed_elbrus_pose.pose.orientation.w;
+  // output_odom.pose.pose.position.x  = transformed_elbrus_pose.pose.position.x;  // _cur_x;
+  // output_odom.pose.pose.position.y  = transformed_elbrus_pose.pose.position.y;  // _cur_y;
+  // output_odom.pose.pose.position.z  = transformed_elbrus_pose.pose.position.z;
+  //
+  // output_odom.pose.pose.orientation.x = transformed_elbrus_pose.pose.orientation.x;
+  // output_odom.pose.pose.orientation.y = transformed_elbrus_pose.pose.orientation.y;
+  // output_odom.pose.pose.orientation.z = transformed_elbrus_pose.pose.orientation.z;
+  // output_odom.pose.pose.orientation.w = transformed_elbrus_pose.pose.orientation.w;
+  output_odom.pose.pose = transformed_elbrus_pose.pose;
 
   ROS_INFO("Elbrus msg");
 }
 
 void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
+  // Сохранение сообщения geometry_msgs::PoseStamped во временную переменную
   mutex_wheel.lock();
   shared_wheel_pose = pose;
   mutex_wheel.unlock();
 
   output_odom.header.stamp = ros::Time::now();
 
+  // Преобразование относительного смещения робота согласно колесной одометрии в смещение в абсолютной системе
   tf2::Quaternion quat_tf_output, quat_tf_input, quat_tf_new;
 
   tf2::convert(output_odom.pose.pose.orientation, quat_tf_output);
   tf2::convert(shared_wheel_pose.pose.orientation, quat_tf_input);
 
+  // Подсчет нового поворота согласно смещению колесной одометрии
   quat_tf_new = quat_tf_output * quat_tf_input;
   quat_tf_new.normalize();
 
@@ -84,12 +92,14 @@ void wheelOdomCallback(const geometry_msgs::PoseStamped& pose) {
                                shared_wheel_pose.pose.position.y,
                                shared_wheel_pose.pose.position.z);
 
+  // Поворот вектора смещения и инкрементирование координат робота
   translateVector = tf2::quatRotate(quat_tf_output, translateVector);
 
   output_odom.pose.pose.position.x  += translateVector.x();  // _cur_x;
   output_odom.pose.pose.position.y  += translateVector.y();  // _cur_y;
   output_odom.pose.pose.position.z  += translateVector.z();
 
+  // Подсчет скорости согласно смещению
   output_odom.twist.twist.linear.x = std::sqrt(std::pow(shared_wheel_pose.pose.position.x, 2) + std::pow(shared_wheel_pose.pose.position.y, 2)) / wheelSpan;
 
   double yaw_angle = tf::getYaw(pose.pose.orientation);
@@ -121,6 +131,7 @@ int main(int argc, char **argv) {
   {
     merge_odom_pub.publish(output_odom);
 
+    // Публикация преобразования odom->base_link в дереве tf
     if (publish_tf) {
       static tf::TransformBroadcaster br;
       tf::Transform transform;
@@ -136,6 +147,8 @@ int main(int argc, char **argv) {
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), odom, base_link));
     }
 
+    // Формирование сообщения std_msgs::Empty запроса колесной одометрии
+    // и подсчет времени между запросами
     std_msgs::Empty updateWOdomMsg;
     wheelSpan = ros::Time::now().toSec() - lastWheelRequest.toSec();
     lastWheelRequest = ros::Time::now();
