@@ -128,7 +128,7 @@
           <image>
             <width>640</width>
             <height>480</height>
-            <format>L_INT8</format>
+            <format>L8</format>
           </image>
           <clip>
             <near>0.1</near>
@@ -150,7 +150,7 @@
           <image>
             <width>640</width>
             <height>480</height>
-            <format>L_INT8</format>
+            <format>L8</format>
           </image>
           <clip>
             <near>0.1</near>
@@ -178,7 +178,7 @@
       <prefix>camera</prefix>
       <depthUpdateRate>30.0</depthUpdateRate>
       <colorUpdateRate>30.0</colorUpdateRate>
-      <infraredUpdateRate>1.0</infraredUpdateRate>
+      <infraredUpdateRate>30.0</infraredUpdateRate>
       <depthTopicName>aligned_depth_to_color/image_raw</depthTopicName>
       <depthCameraInfoTopicName>depth/camera_info</depthCameraInfoTopicName>
       <colorTopicName>color/image_raw</colorTopicName>
@@ -197,6 +197,36 @@
       <pointCloudTopicName>depth/color/points</pointCloudTopicName>
       <pointCloudCutoff>0.3</pointCloudCutoff>
     </plugin>
+  </gazebo>
+
+  <gazebo reference="wheel_left_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <minDepth>0.001</minDepth>
+    <kp>100000000</kp>
+    <kd>1</kd>
+
+    <selfCollide>false</selfCollide>
+  </gazebo>
+
+  <gazebo reference="wheel_right_link">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.001</minDepth>
+      <kp>100000000</kp>
+      <kd>1</kd>
+
+      <selfCollide>false</selfCollide>
+  </gazebo>
+
+  <gazebo reference="wheel_middle_link">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.001</minDepth>
+      <kp>100000000</kp>
+      <kd>1</kd>
+
+      <selfCollide>false</selfCollide>
   </gazebo>
 
   <link name="base_footprint"/>
@@ -218,7 +248,7 @@
     <collision>
       <origin xyz="-0.055 0.0 0.095" rpy="0.0 0.0 0.0" />
       <geometry>
-        <box size="0.31 0.24856 0.23"/>
+        <box size="0.31 0.24856 0.21"/>
       </geometry>
     </collision>
 
@@ -371,23 +401,6 @@
 
   <link name="camera_link"></link>
 
-  <link name="camera_depth_frame"></link>
-
-  <link name="camera_depth_optical_frame"></link>
-
-  <link name="camera_color_frame"></link>
-
-  <link name="camera_color_optical_frame"></link>
-
-  <link name="camera_left_ir_frame"></link>
-
-  <link name="camera_left_ir_optical_frame"></link>
-
-  <link name="camera_right_ir_frame"></link>
-
-  <link name="camera_right_ir_optical_frame"></link>
-
-
    <joint name="camera_joint" type="fixed">
     <parent link="base_link" />
     <child link="camera_bottom_screw_frame" />
@@ -398,53 +411,5 @@
     <parent link="camera_bottom_screw_frame" />
     <child link="camera_link" />
     <pose xyz="0 0.0175 0.0125 " rpy="0 0 0" />
-  </joint>
-
-  <joint name="camera_depth_joint" type="fixed">
-    <parent link="camera_link" />
-    <child link="camera_depth_frame" />
-    <pose xyz="0 0 0" rpy="0 0 0" />
-  </joint>
-
-  <joint name="camera_depth_optical_joint" type="fixed">
-    <parent link="camera_depth_frame" />
-    <child link="camera_depth_optical_frame" />
-    <pose xyz="0 0 0 " rpy="-1.57 0 -1.57" />
-  </joint>
-
-  <joint name="camera_color_joint" type="fixed">
-    <parent link="camera_depth_frame" />
-    <child link="camera_color_frame" />
-    <pose xyz="0 0 0" rpy="0 0 0" />
-  </joint>
-
-  <joint name="camera_color_optical_joint" type="fixed">
-    <parent link="camera_color_frame" />
-    <child link="camera_color_optical_frame" />
-    <pose xyz="0 0 0 " rpy="-1.57 0 -1.57" />
-  </joint>
-
-  <joint name="camera_left_ir_joint" type="fixed">
-    <parent link="camera_depth_frame" />
-    <child link="camera_left_ir_frame" />
-    <pose xyz="0 0 0 " rpy="0 0 0 " />
-  </joint>
-
-  <joint name="camera_left_ir_optical_joint" type="fixed">
-    <parent link="camera_left_ir_frame" />
-    <child link="camera_left_ir_optical_frame" />
-    <pose xyz="0 0 0 " rpy="-1.57 0 -1.57" />
-  </joint>
-
-  <joint name="camera_right_ir_joint" type="fixed">
-    <parent link="camera_depth_frame" />
-    <child link="camera_right_ir_frame" />
-    <pose xyz="0 -0.050 0 " rpy="0 0 0" />
-  </joint>
-
-  <joint name="camera_right_ir_optical_joint" type="fixed">
-    <parent link="camera_right_ir_frame" />
-    <child link="camera_right_ir_optical_frame" />
-    <pose xyz="0 0 0 " rpy="-1.57 0 -1.57" />
   </joint>
 </robot>
