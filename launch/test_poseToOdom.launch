@@ -1,8 +1,0 @@
-<launch>
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
-    <rosparam command="load" file="$(find stereo_nav)/config/robot_localization/pose_to_odom.yaml" />
-
-    <remap from="odometry/filtered" to="/odom_merge"/>
-    <remap from="accel/filtered" to="/accel_merge"/>
-  </node>
-</launch>
