@@ -15,7 +15,7 @@ def generate_launch_description():
 
     parameters={
           'frame_id':'base_footprint',
-          'use_sim_time': False,
+          'use_sim_time': True,
           'subscribe_depth':False,
           'subscribe_stereo': True,
           'use_action_for_goal':True,
@@ -23,6 +23,8 @@ def generate_launch_description():
           'qos_imu':qos,
           'Reg/Strategy':'1',
           'Reg/Force3DoF':'true',
+          'Grid/RayTracing': 'true',
+          'Grid/3D': 'true',
           'RGBD/NeighborLinkRefining':'True',
           'Optimizer/GravitySigma':'0' # Disable imu constraints (we are already in 2D)
     }
@@ -33,10 +35,10 @@ def generate_launch_description():
     #       ('depth/image', '/camera/depth/image_rect_raw')]
 
     remappings=[
-          ('left/image_rect', 'camera/infra1/image_rect_raw'),
-          ('right/image_rect', 'camera/infra2/image_rect_raw'),
-          ('left/camera_info', 'camera/infra1/camera_info'),
-          ('right/camera_info', 'camera/infra2/camera_info')]
+          ('left/image_rect', 'infra1/image_raw'),
+          ('right/image_rect', 'infra2/image_raw'),
+          ('left/camera_info', 'infra1/camera_info'),
+          ('right/camera_info', 'infra2/camera_info')]
 
     urdf_file_name = 'urdf/newModel.xml'
 
@@ -74,30 +76,6 @@ def generate_launch_description():
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}]
         )
-
-    realsense_camera_node = Node(
-        package='realsense2_camera',
-        node_executable='realsense2_camera_node',
-        namespace='camera',
-        parameters=[{
-                'infra_height': 360,
-                'infra_width': 640,
-                'enable_color': False,
-                'color_width': 640,
-                'color_height': 480,
-                'enable_depth': False,
-                'depth_width': 640,
-                'depth_height': 480,
-                'align_depth': False,
-                'depth_module.emitter_enabled': 0,
-                'depth_module.enable_auto_exposure': False,
-                'depth_module.exposure': 18500,
-                'depth_module.gain': 100,
-                'infra_fps': 30.0,
-                'color_fps': 30.0,
-                'depth_fps': 30.0
-        }]
-    )
     ## Nodes to launch
 
     # SLAM mode:
@@ -130,25 +108,27 @@ def generate_launch_description():
         package='isaac_ros_visual_slam',
         plugin='isaac_ros::visual_slam::VisualSlamNode',
         parameters=[{
+                    'use_sim_time': True,
                     'enable_rectified_pose': True,
-                    'denoise_input_images': False,
+                    'denoise_input_images': True,
                     'rectified_images': True,
                     'enable_debug_mode': False,
                     'debug_dump_path': '/tmp/elbrus',
                     'enable_slam_visualization': True,
                     'enable_landmarks_view': True,
                     'enable_observations_view': True,
-                    'map_frame': '_map',
+                    'map_frame': 'map',
                     'odom_frame': 'odom',
                     'base_frame': 'base_footprint',
+                    'enable_localization_n_mapping': False,
                     'input_left_camera_frame': 'camera_infra1_frame',
                     'input_right_camera_frame': 'camera_infra2_frame'
                     }],
 
-        remappings=[('stereo_camera/left/image', 'camera/infra1/image_rect_raw'),
-                    ('stereo_camera/left/camera_info', 'camera/infra1/camera_info'),
-                    ('stereo_camera/right/image', 'camera/infra2/image_rect_raw'),
-                    ('stereo_camera/right/camera_info', 'camera/infra2/camera_info'),
+        remappings=[('stereo_camera/left/image', 'infra1/image_raw'),
+                    ('stereo_camera/left/camera_info', 'infra1/camera_info'),
+                    ('stereo_camera/right/image', 'infra2/image_raw'),
+                    ('stereo_camera/right/camera_info', 'infra2/camera_info'),
                     ('visual_slam/tracking/odometry', 'odom')]
     )
 
@@ -165,7 +145,6 @@ def generate_launch_description():
 
     return LaunchDescription([arg_sim, arg_qos, arg_localization,
                               robot_state_publisher_node, joint_state_publisher_node,
-                              realsense_camera_node,
-                              visual_slam_launch_container,
                               rtabmap_node, rtabmap_node_localization,
+                              visual_slam_launch_container,
                               rtabmap_viz_node])
