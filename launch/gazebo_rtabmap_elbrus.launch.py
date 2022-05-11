@@ -1,11 +1,13 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
+from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
@@ -143,8 +145,20 @@ def generate_launch_description():
         output='screen'
     )
 
+    this_pkg_dir = get_package_share_directory('navigation_rtabmap')
+    nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup')
+    nav2_launch_dir = os.path.join(nav2_dir, 'launch')
+    print([{'use_sim_time': True,
+                        'params_file': os.path.join(this_pkg_dir, 'config', 'navigation', 'nav2_params.yaml'),
+                        'autostart': True}])
+    ros2_navigation = IncludeLaunchDescription(
+                        PythonLaunchDescriptionSource(os.path.join(nav2_launch_dir, 'navigation_launch.py')),
+                        launch_arguments = [{'use_sim_time': True,
+                                            'params_file': os.path.join(this_pkg_dir, 'config', 'navigation', 'nav2_params.yaml')}])
+
     return LaunchDescription([arg_sim, arg_qos, arg_localization,
                               robot_state_publisher_node, joint_state_publisher_node,
                               rtabmap_node, rtabmap_node_localization,
                               visual_slam_launch_container,
+                              ros2_navigation,
                               rtabmap_viz_node])

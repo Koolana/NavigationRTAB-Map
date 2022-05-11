@@ -24,7 +24,33 @@
       <rosDebugLevel>na</rosDebugLevel>
     </plugin>
   </gazebo> -->
+  <gazebo>
+    <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
+        <ros>
+          <!-- Set namespace -->
+          <!-- <namespace>/demo</namespace> -->
 
+          <!-- Remap default topics -->
+          <!-- <argument>cmd_vel:=cmd_demo</argument> -->
+          <argument>odom:=odom_wheel</argument>
+        </ros>
+
+        <!-- Replace camelCase elements with camel_case ones -->
+        <!-- <odometry_topic>odom_wheel</odometry_topic> -->
+        <update_rate>30</update_rate>
+        <left_joint>wheel_left_joint</left_joint>
+        <right_joint>wheel_right_joint</right_joint>
+        <wheel_separation>1.25</wheel_separation>
+        <wheel_diameter>0.3</wheel_diameter>
+        <odometry_frame>odom_wheel</odometry_frame>
+        <publish_odom>false</publish_odom>
+
+        <!-- wheelTorque and wheelAcceleration now have max_ prefix -->
+        <max_wheel_torque>20</max_wheel_torque>
+        <max_acceleration>1.0</max_acceleration>
+
+      </plugin>
+  </gazebo>
   <!-- RpLidar A2 using CPU -->
   <!-- <gazebo reference="base_scan">
     <sensor type="ray" name="head_rplidar_sensor">
